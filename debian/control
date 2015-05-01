@@ -1,9 +1,9 @@
 Source: galera-3
-Maintainer: Codership Oy <info@codership.com>
+Maintainer: Debian MySQL Maintainers <pkg-mysql-maint@lists.alioth.debian.org>
 Uploaders: Otto Kekäläinen <otto@seravo.fi>
 Section: database
 Priority: optional
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Build-Depends: check,
                debhelper (>= 9),
                libboost-dev (>= 1.41),
@@ -11,8 +11,8 @@ Build-Depends: check,
                libssl-dev,
                scons (>= 2)
 Homepage: http://www.galeracluster.com/
-Vcs-Git: git://github.com/codership/galera.git
-Vcs-Browser: http://github.com/codership/galera.git
+Vcs-Git: git://anonscm.debian.org/pkg-mysql/galera-3.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-mysql/galera-3.git
 
 Package: galera-3
 Architecture: any

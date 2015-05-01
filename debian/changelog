@@ -1,5 +1,5 @@
-galera-3 (25.3.6-1) UNRELEASED; urgency=medium
+galera-3 (25.3.10-1) unstable; urgency=low
 
-  * First deb release.
+  * Initial upload (Closes: #562666)
 
- -- Codership Oy <info@codership.com>  Fri, 01 Aug 2014 14:36:49 +0300
+ -- Otto Kekäläinen <otto@seravo.fi>  Fri, 01 May 2015 20:15:51 +0300
