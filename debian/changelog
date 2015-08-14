@@ -1,3 +1,10 @@
+galera-3 (25.3.10-2) UNRELEASED; urgency=low
+
+  * Backport unreleased fix from upstream regarding GCC 5 building
+    and PRETTY_FUNCTION error
+
+ -- Otto Kekäläinen <otto@seravo.fi>  Fri, 14 Aug 2015 21:31:17 +0200
+
 galera-3 (25.3.10-1) unstable; urgency=low
 
   * Initial upload (Closes: #562666)

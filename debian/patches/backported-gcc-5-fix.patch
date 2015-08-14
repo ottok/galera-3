@@ -1,0 +1,25 @@
+From https://github.com/codership/galera/commit/94b139beca13d345a49abae1197fee2ed546dd66
+From: Daniel Black <daniel.black@openquery.com.au>
+Date: Sat, 30 May 2015 12:21:22 +1000
+Subject: [PATCH] gcc-5.1 fix: __PRETTY_FUNCTION__ -> __func__ as per
+ https://github.com/owncloud/client/pull/3208
+ .
+ See https://github.com/codership/galera/issues/319
+
+---
+ galerautils/src/gu_log.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/galerautils/src/gu_log.h b/galerautils/src/gu_log.h
+index 5e209a7..c9cc034 100644
+--- a/galerautils/src/gu_log.h
++++ b/galerautils/src/gu_log.h
+@@ -70,7 +70,7 @@ extern gu_log_severity_t gu_log_max_level;
+ #if !defined(__cplusplus) || defined(GALERA_LOG_H_ENABLE_CXX)
+ // NOTE: don't add "\n" here even if you really want to do it
+ #define GU_LOG_C(level, ...)\
+-        gu_log(level, __FILE__, __PRETTY_FUNCTION__, __LINE__,\
++        gu_log(level, __FILE__, __func__, __LINE__,\
+                __VA_ARGS__, NULL)
+ 
+ /**
