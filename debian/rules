@@ -22,6 +22,8 @@ endif
 
 
 override_dh_auto_build:
+	# Print build env info to help debug builds on different platforms
+	dpkg-architecture
 	@echo $(SCONS_ARGS)
 	scons $(SCONS_ARGS)
 
