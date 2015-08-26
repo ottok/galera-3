@@ -26,6 +26,11 @@ override_dh_auto_build:
 	dpkg-architecture
 	@echo $(SCONS_ARGS)
 	scons $(SCONS_ARGS)
+	@echo '*****************************************'
+	@echo '**  config.log contents for debugging  **'
+	@echo '*****************************************'
+	@cat config.log
+	@echo '*****************************************'
 
 # Start earlier than MySQL which has value 19
 override_dh_installinit-arch:
