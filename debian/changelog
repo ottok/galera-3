@@ -1,7 +1,7 @@
 galera-3 (25.3.10-2) UNRELEASED; urgency=low
 
   * Backport unreleased fix from upstream regarding GCC 5 building
-    and PRETTY_FUNCTION error
+    and PRETTY_FUNCTION error (Closes: #797238)
   * Print in build log env info to help debug builds on different platforms
   * Adapt upstream fix for pthread build issues on different platforms
   * Update gdb.conf to have tags signed by default
