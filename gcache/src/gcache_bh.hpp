@@ -1,17 +1,19 @@
 /*
- * Copyright (C) 2009-2014 Codership Oy <info@codership.com>
+ * Copyright (C) 2009-2015 Codership Oy <info@codership.com>
  *
  */
 
 #ifndef __GCACHE_BUFHEAD__
 #define __GCACHE_BUFHEAD__
 
+#include "SeqnoNone.hpp"
+#include "gcache_memops.hpp"
+#include <gu_assert.h>
+#include <gu_macros.hpp>
+
 #include <cstring>
 #include <stdint.h>
 #include <ostream>
-
-#include "SeqnoNone.hpp"
-#include "gcache_memops.hpp"
 
 namespace gcache
 {
@@ -28,11 +30,14 @@ namespace gcache
     {
         int64_t  seqno_g;
         int64_t  seqno_d;
-        int64_t  size;    /*! total buffer size, including header */
+        uint64_t size;    /*! total buffer size, including header */
         MemOps*  ctx;
         uint32_t flags;
         int32_t  store;
     }__attribute__((__packed__));
+
+    GU_COMPILE_ASSERT(sizeof(BufferHeader().size) >= sizeof(MemOps::size_type),
+                      buffer_header_size_check);
 
 #define BH_cast(ptr) reinterpret_cast<BufferHeader*>(ptr)
 
@@ -88,7 +93,6 @@ namespace gcache
            << ". store: "   << bh->store;
         return os;
     }
-
 }
 
 #endif /* __GCACHE_BUFHEAD__ */

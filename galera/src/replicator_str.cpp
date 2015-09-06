@@ -1,10 +1,10 @@
 //
-// Copyright (C) 2010-2014 Codership Oy <info@codership.com>
+// Copyright (C) 2010-2015 Codership Oy <info@codership.com>
 //
 
 #include "replicator_smm.hpp"
 #include "uuid.hpp"
-#include <galerautils.hpp>
+#include <gu_abort.h>
 
 namespace galera {
 
@@ -304,6 +304,35 @@ sst_is_trivial (const void* const req, size_t const len)
             !memcmp (req, ReplicatorSMM::TRIVIAL_SST, trivial_len));
 }
 
+wsrep_seqno_t
+ReplicatorSMM::donate_sst(void* const         recv_ctx,
+                          const StateRequest& streq,
+                          const wsrep_gtid_t& state_id,
+                          bool const          bypass)
+{
+    wsrep_cb_status const err(sst_donate_cb_(app_ctx_, recv_ctx,
+                                             streq.sst_req(), streq.sst_len(),
+                                             &state_id, 0, 0, bypass));
+
+    /* The fix to codership/galera#284 may break backward comatibility due to
+     * different (now correct) interpretation of retrun value. Default to old
+     * interpretation which is forward compatible with the new one. */
+#if NO_BACKWARD_COMPATIBILITY
+    wsrep_seqno_t const ret
+        (WSREP_CB_SUCCESS == err ? state_id.seqno : -ECANCELED);
+#else
+    wsrep_seqno_t const ret
+        (int(err) >= 0 ? state_id.seqno : int(err));
+#endif /* NO_BACKWARD_COMPATIBILITY */
+
+    if (ret < 0)
+    {
+        log_error << "SST " << (bypass ? "bypass " : "") << "failed: " << err;
+    }
+
+    return ret;
+}
+
 void ReplicatorSMM::process_state_req(void*       recv_ctx,
                                       const void* req,
                                       size_t      req_size,
@@ -371,12 +400,11 @@ void ReplicatorSMM::process_state_req(void*       recv_ctx,
 
                 if (streq->sst_len()) // if joiner is waiting for SST, notify it
                 {
-                    wsrep_gtid_t state_id = { istr.uuid(),istr.last_applied()};
+                    wsrep_gtid_t const state_id =
+                        { istr.uuid(), istr.last_applied() };
 
-                    rcode = sst_donate_cb_(app_ctx_, recv_ctx,
-                                           streq->sst_req(),
-                                           streq->sst_len(),
-                                           &state_id, 0, 0, true);
+                    rcode = donate_sst(recv_ctx, *streq, state_id, true);
+
                     // we will join in sst_sent.
                     join_now = false;
                 }
@@ -405,8 +433,7 @@ void ReplicatorSMM::process_state_req(void*       recv_ctx,
                 }
                 else
                 {
-                    log_error << "Failed to bypass SST: " << -rcode
-                              << " (" << strerror (-rcode) << ')';
+                    log_error << "Failed to bypass SST";
                 }
 
                 goto out;
@@ -421,9 +448,8 @@ void ReplicatorSMM::process_state_req(void*       recv_ctx,
 
             wsrep_gtid_t const state_id = { state_uuid_, donor_seq };
 
-            rcode = sst_donate_cb_(app_ctx_, recv_ctx,
-                                   streq->sst_req(), streq->sst_len(),
-                                   &state_id, 0, 0, false);
+            rcode = donate_sst(recv_ctx, *streq, state_id, false);
+
             // we will join in sst_sent.
             join_now = false;
         }
@@ -744,12 +770,12 @@ ReplicatorSMM::request_state_transfer (void* recv_ctx,
 
 void ReplicatorSMM::recv_IST(void* recv_ctx)
 {
-    try
+    while (true)
     {
-        while (true)
+        TrxHandle* trx(0);
+        int err;
+        try
         {
-            TrxHandle* trx(0);
-            int err;
             if ((err = ist_receiver_.recv(&trx)) == 0)
             {
                 assert(trx != 0);
@@ -774,7 +800,7 @@ void ReplicatorSMM::recv_IST(void* recv_ctx)
                     trx->set_state(TrxHandle::S_REPLICATING);
                     trx->set_state(TrxHandle::S_CERTIFYING);
                     apply_trx(recv_ctx, trx);
-                    GU_DBUG_SYNC_WAIT("recv_IST_after_apply_trx")
+                    GU_DBUG_SYNC_WAIT("recv_IST_after_apply_trx");
                 }
             }
             else
@@ -783,16 +809,18 @@ void ReplicatorSMM::recv_IST(void* recv_ctx)
             }
             trx->unref();
         }
-    }
-    catch (gu::Exception& e)
-    {
-        log_fatal << "receiving IST failed, node restart required: "
-                  << e.what();
-        st_.mark_corrupt();
-        gcs_.close();
-        gu_abort();
+        catch (gu::Exception& e)
+        {
+            log_fatal << "receiving IST failed, node restart required: "
+                      << e.what();
+            if (trx)
+            {
+                log_fatal << "failed trx: " << *trx;
+            }
+            st_.mark_corrupt();
+            gcs_.close();
+            gu_abort();
+        }
     }
 }
-
-
 } /* namespace galera */

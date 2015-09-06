@@ -20,15 +20,15 @@ import string
 
 sysname = os.uname()[0].lower()
 machine = platform.machine()
-bits = platform.architecture()[0]
+bits = ARGUMENTS.get('bits', platform.architecture()[0])
 print 'Host: ' + sysname + ' ' + machine + ' ' + bits
 
-x86 = 0
-if bits == '32bit':
-    x86 = 32
-elif bits == '64bit':
-    x86 = 64
+x86 = any(arch in machine for arch in [ 'x86', 'i686', 'i386' ])
 
+if bits == '32bit':
+    bits = 32
+elif bits == '64bit':
+    bits = 64
 
 #
 # Print Help
@@ -46,6 +46,7 @@ Commandline Options:
     revno=XXXX          source code revision number
     bpostatic=path      a path to static libboost_program_options.a
     extra_sysroot=path  a path to extra development environment (Fink, Homebrew, MacPorts, MinGW)
+    bits=[32bit|64bit]
 ''')
 # bpostatic option added on Percona request
 
@@ -86,25 +87,27 @@ elif debug_lvl == 3:
 if dbug:
     opt_flags = opt_flags + ' -DGU_DBUG_ON'
 
-
-if x86 == 32:
-    compile_arch = ' -m32 -march=i686'
-    link_arch    = compile_arch
-    if sysname == 'linux':
-        link_arch = link_arch + ' -Wl,-melf_i386'
-elif x86 == 64 and sysname != 'sunos':
-    compile_arch = ' -m64'
-    link_arch    = compile_arch
-    if sysname == 'linux':
-        link_arch = link_arch + ' -Wl,-melf_x86_64'
-elif machine == 'ppc64':
+if sysname == 'sunos':
     compile_arch = ' -mtune=native'
     link_arch    = ''
-elif sysname == 'sunos':
-    compile_arch = ' -mtune=native'
+elif x86:
+    if bits == 32:
+        compile_arch = ' -m32 -march=i686'
+        link_arch    = compile_arch
+        if sysname == 'linux':
+            link_arch = link_arch + ' -Wl,-melf_i386'
+    else:
+        compile_arch = ' -m64'
+        link_arch    = compile_arch
+        if sysname == 'linux':
+            link_arch = link_arch + ' -Wl,-melf_x86_64'
+elif machine == 's390x':
+    compile_arch = ' -mzarch -march=z196 -mtune=zEC12'
     link_arch    = ''
+    if bits == 32:
+        compile_arch += ' -m32'
 else:
-    compile_arch = ''
+    compile_arch = ' -mtune=native'
     link_arch    = ''
 
 
@@ -115,7 +118,7 @@ tests      = int(ARGUMENTS.get('tests', 1))
 strict_build_flags = int(ARGUMENTS.get('strict_build_flags', 1))
 
 
-GALERA_VER = ARGUMENTS.get('version', '3.10')
+GALERA_VER = ARGUMENTS.get('version', '3.12')
 GALERA_REV = ARGUMENTS.get('revno', 'XXXX')
 
 # Attempt to read from file if not given
@@ -186,30 +189,6 @@ if extra_sysroot != '':
     env.Append(CPPFLAGS = ' -I' + extra_sysroot + '/include')
 
 # print env.Dump()
-#
-# Set up build and link paths
-#
-
-# Include paths
-env.Append(CPPPATH = Split('''#
-                              #/asio
-                              #/common
-                              #/galerautils/src
-                              #/gcomm/src
-                              #/gcomm/src/gcomm
-                              #/gcache/src
-                              #/gcs/src
-                              #/wsdb/src
-                              #/galera/src
-                           '''))
-
-# Library paths
-#env.Append(LIBPATH = Split('''#/galerautils/src
-#                              #/gcomm/src
-#                              #/gcs/src
-#                              #/wsdb/src
-#                              #/galera/src
-#                           '''))
 
 # Preprocessor flags
 if sysname != 'sunos' and sysname != 'darwin' and sysname != 'freebsd':
@@ -254,7 +233,7 @@ if not conf.CheckLib('pthread'):
 
 # libatomic may be needed on some 32bit platforms (and 32bit userland PPC64)
 # for 8 byte atomics but not generally required
-if 0 == x86:
+if not x86:
     conf.CheckLib('atomic')
 
 if sysname != 'darwin':
@@ -327,8 +306,13 @@ if boost == 1:
         boost_library_path = ''
     # Use nanosecond time precision
     conf.env.Append(CPPFLAGS = ' -DBOOST_DATE_TIME_POSIX_TIME_STD_CONFIG=1')
+
     # Common procedure to find boost static library
-    boost_libpaths = [ boost_library_path, '/usr/local/lib', '/usr/local/lib64', '/usr/lib', '/usr/lib64' ]
+    if bits == 64:
+        boost_libpaths = [ boost_library_path, '/usr/lib64', '/usr/local/lib64' ]
+    else:
+        boost_libpaths = [ boost_library_path, '/usr/local/lib', '/usr/lib' ]
+
     def check_boost_library(libBaseName, header, configuredLibPath, autoadd = 1):
         libName = libBaseName + boost_library_suffix
         if configuredLibPath != '' and not os.path.isfile(configuredLibPath):
@@ -356,6 +340,7 @@ if boost == 1:
                 print 'Error: library %s does not exist' % libName
                 Exit (1)
             return [libName]
+
     # Required boost headers/libraries
     #
     if boost_pool == 1:
@@ -382,6 +367,9 @@ else:
     print 'Not using boost'
 
 # asio
+cpppath_saved = conf.env.get('CPPPATH')
+
+conf.env.Append(CPPPATH = [ '#/asio' ])
 if conf.CheckCXXHeader('asio.hpp'):
     conf.env.Append(CPPFLAGS = ' -DHAVE_ASIO_HPP')
 else:
@@ -402,15 +390,22 @@ if ssl == 1:
         print 'ssl support required but openssl library not found'
         print 'compile with ssl=0 or check that openssl library is usable'
         Exit(1)
+conf.env['CPPPATH'] = cpppath_saved
 
 # these will be used only with our softaware
 if strict_build_flags == 1:
     conf.env.Append(CPPFLAGS = ' -Werror')
     conf.env.Append(CCFLAGS  = ' -pedantic')
-    conf.env.Append(CXXFLAGS = ' -Weffc++ -Wold-style-cast')
+    if 'clang' not in conf.env['CXX']:
+        conf.env.Append(CXXFLAGS = ' -Weffc++ -Wold-style-cast')
+    else:
+        conf.env.Append(CPPFLAGS = ' -Wno-self-assign')
+        if 'ccache' in conf.env['CXX']:
+            conf.env.Append(CPPFLAGS = ' -Qunused-arguments')
 
 env = conf.Finish()
-Export('x86', 'env', 'sysname', 'libboost_program_options')
+
+Export('x86', 'bits', 'env', 'sysname', 'libboost_program_options')
 
 #
 # Actions to build .dSYM directories, containing debugging information for Darwin

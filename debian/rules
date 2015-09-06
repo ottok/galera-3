@@ -1,6 +1,9 @@
 #!/usr/bin/make -f
 
 export DH_VERBOSE=1
+export DEB_BUILD_HARDENING=1
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
 
 # Parallel build support as adviced
 # at https://www.debian.org/doc/debian-policy/ch-source.html#s-debianrules-options
@@ -27,7 +30,7 @@ override_dh_auto_build:
 
 # Start earlier than MySQL which has value 19
 override_dh_installinit-arch:
-	dh_installinit --name=garb -- defaults 18 22
+	dh_installinit -n --name=garb -- defaults 18 22
 
 override_dh_strip:
 	dh_strip -pgalera-3 --dbg-package=galera-3-dbg
