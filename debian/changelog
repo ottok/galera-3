@@ -3,6 +3,7 @@ galera-3 (25.3.12-1) UNRELEASED; urgency=low
   * Import new upstream release
     - Fixes GCC 5 building and PRETTY_FUNCTION error (Closes: #797238)
     - Fixes for pthread build issues on different platforms
+  * Add lintian override as garbd is intentionally not started upon installation
   * Print in build log env info to help debug builds on different platforms
   * Update gdb.conf to have tags signed by default
   * Print config.log contents in build log for easier debugging of Debian builds
