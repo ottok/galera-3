@@ -4,7 +4,6 @@
  * $Id$
  */
 
-#include "gcs_act_proto.hpp"
 #include "gcs_defrag.hpp"
 
 #include <errno.h>
@@ -20,7 +19,6 @@
         else {                                                  \
             gu_error ("Could not allocate memory for new "      \
                       "action of size: %zd", df->size);         \
-            assert(0);                                          \
             return -ENOMEM;                                     \
         }                                                       \
     } while (0)
