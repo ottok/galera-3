@@ -1,9 +1,9 @@
-galera-3 (25.3.10-2) UNRELEASED; urgency=low
+galera-3 (25.3.12-1) UNRELEASED; urgency=low
 
-  * Backport unreleased fix from upstream regarding GCC 5 building
-    and PRETTY_FUNCTION error (Closes: #797238)
+  * Import new upstream release
+    - Fixes GCC 5 building and PRETTY_FUNCTION error (Closes: #797238)
+    - Fixes for pthread build issues on different platforms
   * Print in build log env info to help debug builds on different platforms
-  * Adapt upstream fix for pthread build issues on different platforms
   * Update gdb.conf to have tags signed by default
   * Print config.log contents in build log for easier debugging of Debian builds
   * Print config.log if build fails
