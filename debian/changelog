@@ -1,10 +1,10 @@
-galera-3 (25.3.12-2) UNRELEASED; urgency=low
+galera-3 (25.3.12-2) unstable; urgency=low
 
   * Backport upstream commit as patch to fix multiple build problems
     (Closes: #799150)
   * Backport upstream commit as patch to fix x32 build problems
 
- -- Otto Kekäläinen <otto@seravo.fi>  Sun, 20 Sep 2015 22:55:49 +0300
+ -- Otto Kekäläinen <otto@seravo.fi>  Sun, 20 Sep 2015 23:27:16 +0300
 
 galera-3 (25.3.12-1) unstable; urgency=low
 
