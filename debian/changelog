@@ -1,3 +1,9 @@
+galera-3 (25.3.12-2) UNRELEASED; urgency=low
+
+  * Backport upstream commit as patch to fix  multiple build problems
+
+ -- Otto Kekäläinen <otto@seravo.fi>  Sun, 20 Sep 2015 22:55:49 +0300
+
 galera-3 (25.3.12-1) unstable; urgency=low
 
   * Import new upstream release
