@@ -1,1 +1,2 @@
 fix-build-pthred-error.patch
+fix-compilation-for-x32-abi.patch
