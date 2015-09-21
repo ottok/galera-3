@@ -1,12 +1,15 @@
-From https://github.com/codership/galera/commit/f87972c0f14f947fa646485565774034e2771760
 From: Alexey Yurchenko <alexey.yurchenko@codership.com>
-Date: Sat, 19 Sep 2015 16:10:17 +0000
-Subject: [PATCH] Refs codership/galera#321   * SConstruct: removed
- -mtune=native by default since it is not supported on every platform   *
- galerautils/src/gu_rand.c: packed seed struct to avoid uninitialized data
- warning on some platforms   * chromium/build_config.h: made sure it defines
- only macros which are actually being used, which removes the need to define
- specific platforms
+Subject: [PATCH] Refs codership/galera#321
+
+ * SConstruct: removed -mtune=native by default since it is not supported on
+   every platform
+
+ * galerautils/src/gu_rand.c: packed seed struct to avoid uninitialized data
+   warning on some platforms   * chromium/build_config.h: made sure it defines
+   only macros which are actually being used, which removes the need to define
+   specific platforms
+
+Origin: upstream, https://github.com/codership/galera/commit/f87972c0f14f947fa
 Bug: https://github.com/codership/galera/issues/321
 
 ---

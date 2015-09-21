@@ -1,3 +1,9 @@
+galera-3 (25.3.12-3) UNRELEASED; urgency=low
+
+  * Update patches with proper DEP-3 compliant headers
+
+ -- Otto Kekäläinen <otto@seravo.fi>  Mon, 21 Sep 2015 13:04:22 +0300
+
 galera-3 (25.3.12-2) unstable; urgency=low
 
   * Backport upstream commit as patch to fix multiple build problems

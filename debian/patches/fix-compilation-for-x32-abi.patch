@@ -1,8 +1,9 @@
-From https://github.com/codership/galera/commit/0bcbaabc9f6ca55823b76cb4ed3f5d3c83c306df
-From: Alexey Yurchenko <ayurchen@gmail.com>
-Date: Sun, 20 Sep 2015 20:24:17 +0300
-Subject: [PATCH] Refs codership/galera#321 this should fix compilation for x32
- ABI
+From: Alexey Yurchenko <alexey.yurchenko@codership.com>
+Subject: [PATCH] Refs codership/galera#321
+
+ this should fix compilation for x32 ABI
+
+Origin: upstream, https://github.com/codership/galera/commit/0bcbaabc9f6ca55823
 Bug: https://github.com/codership/galera/issues/321
 
 ---
