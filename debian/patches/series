@@ -1,2 +1,3 @@
 fix-build-pthred-error.patch
 fix-compilation-for-x32-abi.patch
+fix-asio-sslv3-deprication.patch

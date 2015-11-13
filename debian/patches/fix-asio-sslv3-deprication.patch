@@ -1,0 +1,29 @@
+From: Alexey Yurchenko <alexey.yurchenko@codership.com>
+
+ Fix build error introduced by SSLv3 deprication. Continue
+ to use bundled asio instead of system one due to better stability
+ and control in the bundled one.
+
+Bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=804336
+
+---
+diff --git a/asio/asio/ssl/detail/openssl_context_service.hpp b/asio/asio/ssl/detail/openssl_context_service.hpp
+index 7adcfaa..6329869 100755
+--- a/asio/asio/ssl/detail/openssl_context_service.hpp
++++ b/asio/asio/ssl/detail/openssl_context_service.hpp
+@@ -75,7 +75,6 @@ public:
+     case context_base::sslv2_server:
+       impl = ::SSL_CTX_new(::SSLv2_server_method());
+       break;
+-*/
+     case context_base::sslv3:
+       impl = ::SSL_CTX_new(::SSLv3_method());
+       break;
+@@ -85,6 +84,7 @@ public:
+     case context_base::sslv3_server:
+       impl = ::SSL_CTX_new(::SSLv3_server_method());
+       break;
++*/
+     case context_base::tlsv1:
+       impl = ::SSL_CTX_new(::TLSv1_method());
+       break;
