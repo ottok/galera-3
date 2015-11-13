@@ -1,9 +1,9 @@
-galera-3 (25.3.12-3) UNRELEASED; urgency=low
+galera-3 (25.3.12-3) unstable; urgency=low
 
   * Update patches with proper DEP-3 compliant headers
   * Add patch to fix build error after SSLv3 deprication (Closes: #804336)
 
- -- Otto Kekäläinen <otto@seravo.fi>  Mon, 21 Sep 2015 13:04:22 +0300
+ -- Otto Kekäläinen <otto@seravo.fi>  Fri, 13 Nov 2015 15:41:29 +0200
 
 galera-3 (25.3.12-2) unstable; urgency=low
 
