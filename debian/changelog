@@ -1,3 +1,9 @@
+galera-3 (25.3.13-1) unstable; urgency=low
+
+  * Import new upstream release and drop patches that have become obsolete
+
+ -- Otto Kekäläinen <otto@seravo.fi>  Fri, 27 Nov 2015 22:48:00 +0200
+
 galera-3 (25.3.12-3) unstable; urgency=low
 
   * Update patches with proper DEP-3 compliant headers
