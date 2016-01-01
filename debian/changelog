@@ -1,3 +1,9 @@
+galera-3 (25.3.13-3) UNRELEASED; urgency=low
+
+  * Ran wrap-and-sort
+
+ -- Otto Kekäläinen <otto@seravo.fi>  Fri, 01 Jan 2016 16:12:05 +0200
+
 galera-3 (25.3.13-2) unstable; urgency=low
 
   * Added libasio-dev as build dependency. The new upstream SConscript will

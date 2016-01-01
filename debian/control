@@ -6,11 +6,11 @@ Priority: optional
 Standards-Version: 3.9.6
 Build-Depends: check,
                debhelper (>= 9),
+               libasio-dev,
                libboost-dev (>= 1.41),
                libboost-program-options-dev (>= 1.41),
                libssl-dev,
-               scons (>= 2),
-               libasio-dev
+               scons (>= 2)
 Homepage: http://www.galeracluster.com/
 Vcs-Git: git://anonscm.debian.org/pkg-mysql/galera-3.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-mysql/galera-3.git
@@ -27,10 +27,7 @@ Conflicts: garbd-2,
            percona-xtradb-cluster-galera-3.x,
            percona-xtradb-cluster-garbd-2.x,
            percona-xtradb-cluster-garbd-3.x
-Provides: wsrep,
-          galera,
-          galera3,
-          percona-xtradb-cluster-galera-25
+Provides: galera, galera3, percona-xtradb-cluster-galera-25, wsrep
 Breaks: galera
 Replaces: galera
 Description: Replication framework for transactional applications
