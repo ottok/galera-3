@@ -1,9 +1,10 @@
-galera-3 (25.3.13-2) UNRELEASED; urgency=low
+galera-3 (25.3.13-2) unstable; urgency=low
 
   * Added libasio-dev as build dependency. The new upstream SConscript will
     automatically use system ASIO if the provided version is recent enough
     (Closes: #804336).
   * Make GFDL link explicit and other Lintian fixes
+  * Update git-buildpackage config to allow fix branches etc
 
  -- Otto Kekäläinen <otto@seravo.fi>  Thu, 31 Dec 2015 23:45:17 +0200
 
