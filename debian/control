@@ -3,7 +3,7 @@ Maintainer: Debian MySQL Maintainers <pkg-mysql-maint@lists.alioth.debian.org>
 Uploaders: Otto Kekäläinen <otto@seravo.fi>
 Section: database
 Priority: optional
-Standards-Version: 3.9.6
+Standards-Version: 3.9.7
 Build-Depends: check,
                debhelper (>= 9),
                libasio-dev,

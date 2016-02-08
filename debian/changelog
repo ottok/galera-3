@@ -1,3 +1,9 @@
+galera-3 (25.3.14-2) UNRELEASED; urgency=low
+
+  * Update standards version
+
+ -- Otto Kekäläinen <otto@seravo.fi>  Mon, 08 Feb 2016 10:01:55 +0200
+
 galera-3 (25.3.14-1) unstable; urgency=low
 
   * New upstream release
