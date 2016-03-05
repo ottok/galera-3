@@ -1,9 +1,9 @@
-galera-3 (25.3.14-2) UNRELEASED; urgency=low
+galera-3 (25.3.14-2~exp1) experimental; urgency=low
 
   * Update standards version, vcs-link to use https and maintainer e-mail
   * Add patch to fix build regression on s390x
 
- -- Otto Kekäläinen <otto@seravo.fi>  Mon, 08 Feb 2016 10:01:55 +0200
+ -- Otto Kekäläinen <otto@debian.org>  Sun, 06 Mar 2016 00:09:49 +0200
 
 galera-3 (25.3.14-1) unstable; urgency=low
 
