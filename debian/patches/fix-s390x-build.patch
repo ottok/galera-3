@@ -1,0 +1,19 @@
+From: Teemu Ollakka <teemu.ollakka@galeracluster.com>
+Date: Thu, 3 Mar 2016 10:40:30 +0200
+Subject: [PATCH] GAL-389 Removed CPU-specific -march and -mtune compiler
+ options
+ Only -mzarch option is left for s390x machine to get better
+ cmpatibility over different CPU types.
+Origin: upstream, https://github.com/codership/galera-bugs/commit/a1734cc9b675
+Bug: https://github.com/codership/galera/issues/389
+
+--- a/SConstruct
++++ b/SConstruct
+@@ -113,7 +113,7 @@ elif x86:
+             link_arch = ' -Wl,-melf_x86_64'
+     link_arch = compile_arch + link_arch
+ elif machine == 's390x':
+-    compile_arch = ' -mzarch -march=z196 -mtune=zEC12'
++    compile_arch = ' -mzarch'
+     if bits == 32:
+         compile_arch += ' -m32'

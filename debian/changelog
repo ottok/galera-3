@@ -1,6 +1,7 @@
 galera-3 (25.3.14-2) UNRELEASED; urgency=low
 
   * Update standards version, vcs-link to use https and maintainer e-mail
+  * Add patch to fix build regression on s390x
 
  -- Otto Kekäläinen <otto@seravo.fi>  Mon, 08 Feb 2016 10:01:55 +0200
 
