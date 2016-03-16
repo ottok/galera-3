@@ -1,3 +1,10 @@
+galera-3 (25.3.15-1) unstable; urgency=low
+
+  * New upstream release
+    - Remove all obsolete patches
+
+ -- Otto Kekäläinen <otto@debian.org>  Wed, 16 Mar 2016 20:37:10 +0200
+
 galera-3 (25.3.14-2~exp1) experimental; urgency=low
 
   * Update standards version, vcs-link to use https and maintainer e-mail
