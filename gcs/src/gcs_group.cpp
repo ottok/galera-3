@@ -283,7 +283,7 @@ group_post_state_exchange (gcs_group_t* group)
                               gcs_state_msg_uuid(states[i]))))
             return; // not all states from THIS state exch. received, wait
     }
-    gu_debug ("STATE EXCHANGE: "GU_UUID_FORMAT" complete.",
+    gu_debug ("STATE EXCHANGE: " GU_UUID_FORMAT " complete.",
               GU_UUID_ARGS(&group->state_uuid));
 
     gcs_state_msg_get_quorum (states, group->num, quorum);
@@ -356,7 +356,7 @@ group_post_state_exchange (gcs_group_t* group)
              "\n\tact_id     = %lld,"
              "\n\tlast_appl. = %lld,"
              "\n\tprotocols  = %d/%d/%d (gcs/repl/appl),"
-             "\n\tgroup UUID = "GU_UUID_FORMAT,
+             "\n\tgroup UUID = " GU_UUID_FORMAT,
              quorum->version,
              quorum->primary ? "PRIMARY" : "NON-PRIMARY",
              quorum->conf_id,
@@ -466,7 +466,7 @@ gcs_group_handle_comp_msg (gcs_group_t* group, const gcs_comp_msg_t* comp)
                     // no history provided: start a new one
                     group->act_id_ = GCS_SEQNO_NIL;
                     gu_uuid_generate (&group->group_uuid, NULL, 0);
-                    gu_info ("Starting new group from scratch: "GU_UUID_FORMAT,
+                    gu_info ("Starting new group from scratch: " GU_UUID_FORMAT,
                              GU_UUID_ARGS(&group->group_uuid));
                 }
 // the following should be removed under #474
@@ -546,7 +546,7 @@ gcs_group_handle_uuid_msg  (gcs_group_t* group, const gcs_recv_msg_t* msg)
         group->state      = GCS_GROUP_WAIT_STATE_MSG;
     }
     else {
-        gu_warn ("Stray state UUID msg: "GU_UUID_FORMAT
+        gu_warn ("Stray state UUID msg: " GU_UUID_FORMAT
                  " from node %ld (%s), current group state %s",
                  GU_UUID_ARGS((gu_uuid_t*)msg->buf),
                  msg->sender_idx, group->nodes[msg->sender_idx].name,
@@ -577,7 +577,7 @@ gcs_group_handle_state_msg (gcs_group_t* group, const gcs_recv_msg_t* msg)
 
             if (!gu_uuid_compare(&group->state_uuid, state_uuid)) {
 
-                gu_info ("STATE EXCHANGE: got state msg: "GU_UUID_FORMAT
+                gu_info ("STATE EXCHANGE: got state msg: " GU_UUID_FORMAT
                          " from %d (%s)", GU_UUID_ARGS(state_uuid),
                          msg->sender_idx, gcs_state_msg_name(state));
 
@@ -587,7 +587,7 @@ gcs_group_handle_state_msg (gcs_group_t* group, const gcs_recv_msg_t* msg)
                 group_post_state_exchange (group);
             }
             else {
-                gu_debug ("STATE EXCHANGE: stray state msg: "GU_UUID_FORMAT
+                gu_debug ("STATE EXCHANGE: stray state msg: " GU_UUID_FORMAT
                           " from node %ld (%s), current state UUID: "
                           GU_UUID_FORMAT,
                           GU_UUID_ARGS(state_uuid),
@@ -1534,9 +1534,20 @@ gcs_group_get_state (const gcs_group_t* group)
 void
 gcs_group_get_status (const gcs_group_t* group, gu::Status& status)
 {
-    std::string const desync_count_val
-        (gu::to_string(group->nodes[group->my_idx].desync_count));
-    status.insert("desync_count", desync_count_val);
+    int desync_count; // make sure it is not initialized
+
+    if (gu_likely(group->my_idx >= 0))
+    {
+        const gcs_node_t& this_node(group->nodes[group->my_idx]);
+
+        desync_count = this_node.desync_count;
+    }
+    else
+    {
+        desync_count = 0;
+    }
+
+    status.insert("desync_count", gu::to_string(desync_count));
 }
 
 
