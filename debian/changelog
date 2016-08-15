@@ -1,3 +1,10 @@
+galera-3 (25.3.17-1) unstable; urgency=low
+
+  * New upstream release
+    - Fixes a GCC6/C++11 compatibility issue (Closes: #812052)
+
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 15 Aug 2016 21:04:56 +0300
+
 galera-3 (25.3.16-1) unstable; urgency=low
 
   * New upstream release
