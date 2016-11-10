@@ -1,3 +1,9 @@
+galera-3 (25.3.19-1) unstable; urgency=low
+
+  * New upstream release 25.3.19
+
+ -- Otto Kekäläinen <otto@debian.org>  Thu, 10 Nov 2016 22:56:28 +0200
+
 galera-3 (25.3.17-1) unstable; urgency=low
 
   * New upstream release
