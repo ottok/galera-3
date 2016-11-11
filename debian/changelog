@@ -1,3 +1,9 @@
+galera-3 (25.3.19-2) unstable; urgency=low
+
+ * Backport upstream fix for OpenSSL SSL_R_SHORT_READ
+
+ -- Otto Kekäläinen <otto@debian.org>  Fri, 11 Nov 2016 21:38:04 +0200
+
 galera-3 (25.3.19-1) unstable; urgency=low
 
   * New upstream release 25.3.19

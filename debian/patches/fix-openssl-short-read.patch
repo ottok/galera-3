@@ -1,0 +1,28 @@
+Bug: https://github.com/codership/galera/issues/407
+Origin: Upstream commit e8ff0e005a91294a53fec645afb1cc1af26d2645
+From: Teemu Ollakka <teemu.ollakka@galeracluster.com>
+Subject: OpenSSL 1.1.0 compilation fix 
+ [PATCH] GAL-445, codership/galera#407 OpenSSL 1.1.0 compilation fix
+ Symbol SSL_R_SHORT_READ is not defined in OpenSSL 1.1.0. Compile
+ in case SSL_R_SHOR_READ only if the symbol is defined.
+ .
+ Remove this when 25.3.20 is imported into Debian.
+--- a/galerautils/src/gu_asio.hpp
++++ b/galerautils/src/gu_asio.hpp
+@@ -147,12 +147,15 @@ namespace gu
+     {
+         switch (ERR_GET_REASON(ec.value()))
+         {
++#ifdef SSL_R_SHORT_READ
+         case SSL_R_SHORT_READ:
+             // Short read error seems to be generated quite frequently
+             // by SSL library, probably because broken connections.
+             return true;
++#endif /* SSL_R_SHORT_READ */
++        default:
++            return false;
+         }
+-        return false;
+     }
+ 
+     // Return low level error info for asio::error_code if available.
