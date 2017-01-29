@@ -961,7 +961,7 @@ core_handle_state_msg (gcs_core_t*          core,
 static ssize_t
 core_msg_to_action (gcs_core_t*          core,
                     struct gcs_recv_msg* msg,
-                    struct gcs_act*      act)
+                    struct gcs_act_rcvd* rcvd)
 {
     ssize_t      ret = 0;
     gcs_group_t* group = &core->group;
@@ -982,6 +982,8 @@ core_msg_to_action (gcs_core_t*          core,
                 // See #165.
                 // There is nobody to pass this error to for graceful shutdown:
                 // application thread is blocked waiting for SST.
+                // Also note that original ret value is not preserved on return
+                // so this must be done here.
                 gu_abort();
             }
             act_type = GCS_ACT_JOIN;
@@ -991,13 +993,17 @@ core_msg_to_action (gcs_core_t*          core,
             act_type = GCS_ACT_SYNC;
             break;
         default:
-            gu_error ("Iternal error. Unexpected message type %s from ld%",
+            gu_error ("Iternal error. Unexpected message type %s from %ld",
                       gcs_msg_type_string[msg->type], msg->sender_idx);
             assert (0);
             ret = -EPROTO;
         }
 
-        if (ret > 0) {
+        if (ret != 0) {
+            if      (ret > 0) rcvd->id = 0;
+            else if (ret < 0) rcvd->id = ret;
+
+            struct gcs_act* const act(&rcvd->act);
             act->type    = act_type;
             act->buf     = msg->buf;
             act->buf_len = msg->size;
@@ -1097,7 +1103,7 @@ ssize_t gcs_core_recv (gcs_core_t*          conn,
         case GCS_MSG_JOIN:
         case GCS_MSG_SYNC:
         case GCS_MSG_FLOW:
-            ret = core_msg_to_action (conn, recv_msg, &recv_act->act);
+            ret = core_msg_to_action (conn, recv_msg, recv_act);
             assert (ret == recv_act->act.buf_len || ret <= 0);
             break;
         case GCS_MSG_CAUSAL:
@@ -1120,7 +1126,7 @@ out:
 
     assert (ret || GCS_ACT_ERROR == recv_act->act.type);
     assert (ret == recv_act->act.buf_len || ret < 0);
-    assert (recv_act->id       <= GCS_SEQNO_ILL ||
+    assert (recv_act->id       <= 0 ||
             recv_act->act.type == GCS_ACT_TORDERED ||
             recv_act->act.type == GCS_ACT_STATE_REQ); // <- dirty hack
     assert (recv_act->sender_idx >= 0 ||
