@@ -1,0 +1,73 @@
+Description: avoid unaligned access
+ Fix various unaligned accesses in checksumming,
+ serialization/deserialization, etc. code.  Unaligned access is non-portable.
+ .
+ Work around this by using memcpy instead.
+Author: Steve Langasek <steve.langasek@ubuntu.com>
+
+Index: galera-3-25.3.19/galera/src/write_set_ng.cpp
+===================================================================
+--- galera-3-25.3.19.orig/galera/src/write_set_ng.cpp
++++ galera-3-25.3.19/galera/src/write_set_ng.cpp
+@@ -165,9 +165,8 @@
+ 
+     compute (ptr, csize, check);
+ 
+-    hcheck = *(reinterpret_cast<const type_t*>(
+-                   reinterpret_cast<const gu::byte_t*>(ptr) + csize
+-                   ));
++    memcpy(&hcheck, reinterpret_cast<const gu::byte_t*>(ptr)+csize,
++           sizeof(type_t));
+ 
+     if (gu_likely(check == hcheck)) return;
+ 
+Index: galera-3-25.3.19/gcs/src/gcs_state_msg.cpp
+===================================================================
+--- galera-3-25.3.19.orig/gcs/src/gcs_state_msg.cpp
++++ galera-3-25.3.19/gcs/src/gcs_state_msg.cpp
+@@ -174,7 +174,8 @@
+     strcpy (name,     state->name);
+     strcpy (inc_addr, state->inc_addr);
+     *appl_proto_ver = state->appl_proto_ver; // in preparation for V1
+-    *cached         = htog64(state->cached);
++    memcpy(cached, &state->cached, sizeof(state->cached));
++    *cached         = htog64(*cached);
+     *desync_count   = htog32(state->desync_count);
+ 
+     return ((uint8_t*)(desync_count + 1) - (uint8_t*)buf);
+@@ -201,7 +202,8 @@
+     int64_t* cached_ptr = (int64_t*)(appl_ptr + 1);
+     if (*version >= 3) {
+         assert(buf_len >= (uint8_t*)(cached_ptr + 1) - (uint8_t*)buf);
+-        cached = gtoh64(*cached_ptr);
++        memcpy(&cached, cached_ptr, sizeof(cached));
++        cached = gtoh64(cached);
+     }
+ 
+     int32_t  desync_count = 0;
+Index: galera-3-25.3.19/galerautils/src/gu_serialize.hpp
+===================================================================
+--- galera-3-25.3.19.orig/galerautils/src/gu_serialize.hpp
++++ galera-3-25.3.19/galerautils/src/gu_serialize.hpp
+@@ -72,7 +72,8 @@
+             gu_throw_error(EMSGSIZE) << ret << " > " << buflen;
+         }
+         void* const pos(reinterpret_cast<byte_t*>(buf) + offset);
+-        *reinterpret_cast<TO*>(pos) = htog<TO>(f);
++        TO t_aligned = htog<TO>(f);
++        memcpy(reinterpret_cast<TO*>(pos), &t_aligned, sizeof(t_aligned));
+         return ret;
+     }
+ 
+@@ -91,7 +92,10 @@
+             gu_throw_error(EMSGSIZE) << ret << " > " << buflen;
+         }
+         const void* const pos(reinterpret_cast<const byte_t*>(buf) + offset);
+-        t = gtoh<FROM>(*reinterpret_cast<const FROM*>(pos));
++        FROM f_aligned;
++        memcpy(&f_aligned, reinterpret_cast<const FROM*>(pos),
++               sizeof(f_aligned));
++        t = gtoh<FROM>(f_aligned);
+         return ret;
+     }
+ 
