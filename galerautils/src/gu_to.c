@@ -20,7 +20,7 @@
 #include "gu_log.h"
 #include "gu_assert.h"
 #include "gu_mem.h"
-#include "gu_mutex.h"
+#include "gu_threads.h"
 #include "gu_to.h"
 
 #define TO_USE_SIGNAL 1
@@ -421,6 +421,7 @@ long gu_to_interrupt (gu_to_t *to, gu_seqno_t seqno)
             gu_debug ("signaling to interrupt wait seqno: seqno = %llu, "
                       "TO seqno = %llu", seqno, to->seqno);
             rcode    = to_wake_waiter (w);
+            /* fall through */
         case RELEASED:
             w->state = INTERRUPTED;
             break;
