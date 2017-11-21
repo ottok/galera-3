@@ -1,3 +1,10 @@
+galera-3 (25.3.22-1) unstable; urgency=low
+
+  * Update download URL and add check authenticity with PGP signature
+  * New upstream version 25.3.22
+
+ -- Otto Kekäläinen <otto@debian.org>  Tue, 21 Nov 2017 11:57:30 +0100
+
 galera-3 (25.3.20-1) unstable; urgency=low
 
   * Update Vcs-* URLs to use secure connections

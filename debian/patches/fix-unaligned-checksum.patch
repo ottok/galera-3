@@ -5,11 +5,9 @@ Description: avoid unaligned access
  Work around this by using memcpy instead.
 Author: Steve Langasek <steve.langasek@ubuntu.com>
 
-Index: galera-3-25.3.19/galera/src/write_set_ng.cpp
-===================================================================
---- galera-3-25.3.19.orig/galera/src/write_set_ng.cpp
-+++ galera-3-25.3.19/galera/src/write_set_ng.cpp
-@@ -165,9 +165,8 @@
+--- a/galera/src/write_set_ng.cpp
++++ b/galera/src/write_set_ng.cpp
+@@ -165,9 +165,8 @@ WriteSetNG::Header::Checksum::verify (Ve
  
      compute (ptr, csize, check);
  
@@ -21,11 +19,9 @@ Index: galera-3-25.3.19/galera/src/write_set_ng.cpp
  
      if (gu_likely(check == hcheck)) return;
  
-Index: galera-3-25.3.19/gcs/src/gcs_state_msg.cpp
-===================================================================
---- galera-3-25.3.19.orig/gcs/src/gcs_state_msg.cpp
-+++ galera-3-25.3.19/gcs/src/gcs_state_msg.cpp
-@@ -174,7 +174,8 @@
+--- a/gcs/src/gcs_state_msg.cpp
++++ b/gcs/src/gcs_state_msg.cpp
+@@ -174,7 +174,8 @@ gcs_state_msg_write (void* buf, const gc
      strcpy (name,     state->name);
      strcpy (inc_addr, state->inc_addr);
      *appl_proto_ver = state->appl_proto_ver; // in preparation for V1
@@ -35,7 +31,7 @@ Index: galera-3-25.3.19/gcs/src/gcs_state_msg.cpp
      *desync_count   = htog32(state->desync_count);
  
      return ((uint8_t*)(desync_count + 1) - (uint8_t*)buf);
-@@ -201,7 +202,8 @@
+@@ -201,7 +202,8 @@ gcs_state_msg_read (const void* const bu
      int64_t* cached_ptr = (int64_t*)(appl_ptr + 1);
      if (*version >= 3) {
          assert(buf_len >= (uint8_t*)(cached_ptr + 1) - (uint8_t*)buf);
@@ -45,11 +41,9 @@ Index: galera-3-25.3.19/gcs/src/gcs_state_msg.cpp
      }
  
      int32_t  desync_count = 0;
-Index: galera-3-25.3.19/galerautils/src/gu_serialize.hpp
-===================================================================
---- galera-3-25.3.19.orig/galerautils/src/gu_serialize.hpp
-+++ galera-3-25.3.19/galerautils/src/gu_serialize.hpp
-@@ -72,7 +72,8 @@
+--- a/galerautils/src/gu_serialize.hpp
++++ b/galerautils/src/gu_serialize.hpp
+@@ -72,7 +72,8 @@ namespace gu
              gu_throw_error(EMSGSIZE) << ret << " > " << buflen;
          }
          void* const pos(reinterpret_cast<byte_t*>(buf) + offset);
@@ -59,7 +53,7 @@ Index: galera-3-25.3.19/galerautils/src/gu_serialize.hpp
          return ret;
      }
  
-@@ -91,7 +92,10 @@
+@@ -91,7 +92,10 @@ namespace gu
              gu_throw_error(EMSGSIZE) << ret << " > " << buflen;
          }
          const void* const pos(reinterpret_cast<const byte_t*>(buf) + offset);
