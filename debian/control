@@ -2,8 +2,8 @@ Source: galera-3
 Maintainer: Debian MySQL Maintainers <pkg-mysql-maint@lists.alioth.debian.org>
 Uploaders: Otto Kekäläinen <otto@debian.org>
 Section: database
-Priority: optional
-Standards-Version: 4.1.1
+Priority: extra
+Standards-Version: 4.1.3.0
 Build-Depends: check,
                debhelper (>= 9),
                libasio-dev,
@@ -41,7 +41,6 @@ Description: Replication framework for transactional applications
 Package: galera-3-dbg
 Architecture: any
 Section: debug
-Priority: extra
 Depends: galera-3 (= ${binary:Version}), ${misc:Depends}
 Description: debugging symbols for galera-3
  This package contains the debugging symbols for galera-3.
@@ -63,7 +62,6 @@ Description: Galera arbitrator daemon
 Package: galera-arbitrator-3-dbg
 Architecture: any
 Section: debug
-Priority: extra
 Conflicts: percona-xtradb-cluster-galera-2.x-dbg
 Depends: galera-arbitrator-3 (= ${binary:Version}), ${misc:Depends}
 Description: debugging symbols for galera-arbitrator-3
