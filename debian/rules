@@ -50,6 +50,6 @@ override_dh_strip:
 	dh_strip -pgalera-arbitrator-3 --dbg-package=galera-arbitrator-3-dbg
 
 %:
-	dh $@
+	dh $@ --list-missing
 
 .PHONY: override_dh_strip
