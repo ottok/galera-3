@@ -1,3 +1,11 @@
+galera-3 (25.3.23-1) unstable; urgency=low
+
+  * Update VCS-* links to point to Salsa
+  * New upstream version 25.3.23
+    - Includes GCC-7 build fix (Closes: #853410)
+
+ -- Otto Kekäläinen <otto@debian.org>  Sun, 04 Mar 2018 01:12:52 +0200
+
 galera-3 (25.3.22-1) unstable; urgency=low
 
   * Update download URL and add check authenticity with PGP signature
