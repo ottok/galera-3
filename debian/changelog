@@ -3,6 +3,8 @@ galera-3 (25.3.23-1) unstable; urgency=low
   * Update VCS-* links to point to Salsa
   * New upstream version 25.3.23
     - Includes GCC-7 build fix (Closes: #853410)
+  * Fix Lintian complaints
+  * Use dh --list-missing to detect extra files that might belong in package
 
  -- Otto Kekäläinen <otto@debian.org>  Sun, 04 Mar 2018 01:12:52 +0200
 
