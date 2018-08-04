@@ -1,0 +1,72 @@
+variables:
+  DEBFULLNAME: "Salsa Pipeline"
+  DEBEMAIL: "<salsa-pipeline@debian.org>"
+  DEBIAN_FRONTEND: noninteractive
+  WORKING_DIR: ./debian/output
+
+stages:
+  - build
+  - test
+
+image: debian:unstable
+
+build package:
+  stage: build
+  artifacts:
+    expire_in: 180 day
+    name: "$CI_BUILD_NAME"
+    paths:
+        - ${WORKING_DIR}/
+  script:
+    - apt-get update
+    - apt-get install eatmydata -y
+    - eatmydata apt-get build-dep -y .
+    - eatmydata apt-get install git-buildpackage -y
+    - gbp pull --ignore-branch
+    - gbp buildpackage --git-ignore-branch --git-export-dir=${WORKING_DIR} -us -uc
+
+run autopkgtest:
+  stage: test
+  script:
+    - apt-get update && apt-get install autopkgtest eatmydata -y --no-install-recommends
+    - eatmydata autopkgtest ${WORKING_DIR}/*.deb -- null
+
+run lintian:
+  stage: test
+  script:
+    - apt-get update && apt-get install lintian -y --no-install-recommends
+    - lintian -iI ${WORKING_DIR}/*.changes
+
+run reprotest:
+  stage: test
+  image: genericpipeline/reprotest-docker
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 180 day
+    paths:
+      - ./reprotest.log
+    when: always
+  script:
+    - apt-get update && apt-get install eatmydata -y
+    - eatmydata apt-get build-dep -y .
+    - export DEB_BUILD_OPTIONS=nocheck
+    - eatmydata reprotest . -- null &> reprotest.log
+  tags:
+    - privileged
+
+run piuparts:
+  stage: test
+  image: genericpipeline/piuparts-docker
+  services:
+    - docker:dind
+  script:
+    - CHROOT_PATH=/tmp/debian-unstable
+    - CONTAINER_ID=$(docker run --rm -d debian:unstable sleep infinity)
+    - docker exec ${CONTAINER_ID} bash -c "apt-get update && apt-get install eatmydata -y"
+    - mkdir -p ${CHROOT_PATH}
+    - docker export ${CONTAINER_ID} | tar -C ${CHROOT_PATH} -xf -
+    - mknod -m 666 ${CHROOT_PATH}/dev/urandom c 1 9
+    - piuparts --hard-link -e ${CHROOT_PATH} ${WORKING_DIR}/*.deb
+  tags:
+    - privileged
+
