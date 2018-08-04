@@ -1,3 +1,9 @@
+galera-3 (25.3.23-2) UNRELEASED; urgency=low
+
+  * Open new entry
+
+ -- Otto Kekäläinen <otto@debian.org>  Sat, 04 Aug 2018 22:04:14 +0800
+
 galera-3 (25.3.23-1) unstable; urgency=low
 
   * Update VCS-* links to point to Salsa
