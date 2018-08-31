@@ -5,7 +5,7 @@ Section: database
 Priority: extra
 Standards-Version: 4.1.3.0
 Build-Depends: check,
-               debhelper (>= 9),
+               debhelper (>= 9.20151219~),
                libasio-dev,
                libboost-dev (>= 1.41),
                libboost-program-options-dev (>= 1.41),
@@ -38,13 +38,6 @@ Description: Replication framework for transactional applications
  .
  This package contains the Galera library/plugin.
 
-Package: galera-3-dbg
-Architecture: any
-Section: debug
-Depends: galera-3 (= ${binary:Version}), ${misc:Depends}
-Description: debugging symbols for galera-3
- This package contains the debugging symbols for galera-3.
-
 Package: galera-arbitrator-3
 Architecture: any
 Conflicts: garbd-2, garbd2, percona-xtradb-cluster-garbd-2.x
@@ -58,11 +51,3 @@ Description: Galera arbitrator daemon
  replication engine see http://galeracluster.com.
  .
  This package contains the Galera arbitrator daemon (garbd).
-
-Package: galera-arbitrator-3-dbg
-Architecture: any
-Section: debug
-Conflicts: percona-xtradb-cluster-galera-2.x-dbg
-Depends: galera-arbitrator-3 (= ${binary:Version}), ${misc:Depends}
-Description: debugging symbols for galera-arbitrator-3
- This package contains the debugging symbols for galera-arbitrator-3.
