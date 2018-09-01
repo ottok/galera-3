@@ -49,7 +49,7 @@ override_dh_installinit-arch:
 	dh_installinit -n --name=garb -- defaults 18 22
 
 override_dh_strip:
-	dh_strip --dbsym-migration='galera-3-dbg (<< 25.3.23-2~), galera-arbitrator-3-dbg (<< 25.3.23-2~)'
+	dh_strip --dbgsym-migration='galera-3-dbg (<< 25.3.23-2~), galera-arbitrator-3-dbg (<< 25.3.23-2~)'
 
 %:
 	dh $@ --list-missing
