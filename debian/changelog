@@ -1,8 +1,16 @@
-galera-3 (25.3.23-2) UNRELEASED; urgency=low
+galera-3 (25.3.24-1) UNRELEASED; urgency=low
 
-  * Open new entry
+  [ Otto Kekäläinen ]
+  * New upstream version 25.3.24
+  * Add .gitlab-ci.yml copied from Salsa-CI team's example
+  * Add rudimentary autopkgtests
+  * Make build reproducible by forcing an empty GNU build-id
+  * Explicitly forbid tests if DEB_BUILD_OPTIONS has nocheck
 
- -- Otto Kekäläinen <otto@debian.org>  Sat, 04 Aug 2018 22:04:14 +0800
+  [ Daniel Kahn Gillmor ]
+  * Modernize debugging symbols
+
+ -- Otto Kekäläinen <otto@debian.org>  Sun, 14 Oct 2018 22:48:01 +0300
 
 galera-3 (25.3.23-1) unstable; urgency=low
 
