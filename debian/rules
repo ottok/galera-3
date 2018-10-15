@@ -26,6 +26,8 @@ ifeq (armhf,$(DEB_HOST_ARCH))
 else
 	SCONS_ARGS += tests=1 deterministic_tests=1
 endif
+else
+	SCONS_ARGS += tests=0 deterministic_tests=0
 endif
 
 # Use strict compilation flags (ie -Werror) if requested
