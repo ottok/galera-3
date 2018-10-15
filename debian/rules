@@ -20,9 +20,12 @@ endif
 
 # Tests are run by default sometimes, so explicitly enable or disable them
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	SCONS_ARGS += tests=1 deterministic_tests=1
-else
+# Bus errors on arm64 kernels prevent running testsuite when building armhf
+ifeq (armhf,$(DEB_HOST_ARCH))
 	SCONS_ARGS += tests=0 deterministic_tests=0
+else
+	SCONS_ARGS += tests=1 deterministic_tests=1
+endif
 endif
 
 # Use strict compilation flags (ie -Werror) if requested
