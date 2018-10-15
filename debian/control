@@ -2,7 +2,7 @@ Source: galera-3
 Maintainer: Debian MySQL Maintainers <pkg-mysql-maint@lists.alioth.debian.org>
 Uploaders: Otto Kekäläinen <otto@debian.org>
 Section: database
-Priority: extra
+Priority: optional
 Standards-Version: 4.2.1
 Build-Depends: check,
                debhelper (>= 9.20151219~),
