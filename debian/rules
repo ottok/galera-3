@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 export DEB_BUILD_HARDENING=1
 DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/buildflags.mk
+include /usr/share/dpkg/default.mk
 
 # Parallel build support as adviced
 # at https://www.debian.org/doc/debian-policy/ch-source.html#s-debianrules-options
