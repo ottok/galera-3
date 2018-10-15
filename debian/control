@@ -33,7 +33,7 @@ Replaces: galera
 Description: Replication framework for transactional applications
  Galera is a fast synchronous multimaster wsrep provider (replication engine)
  for transactional databases and similar applications. For more information
- about wsrep API see http://launchpad.net/wsrep. For a description of Galera
+ about wsrep API see https://launchpad.net/wsrep. For a description of Galera
  replication engine see http://galeracluster.com.
  .
  This package contains the Galera library/plugin.

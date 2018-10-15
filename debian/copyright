@@ -1,13 +1,13 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Galera replication - a write set (wsrep) provider
 Upstream-Contact: Codership Oy <info@codership.com>
-Source: http://github.com/codership/galera
+Source: https://github.com/codership/galera
 Comments:
  Codership have added an additional clause to cover use of OpenSSL with
  Galera under the GPL-2 license.  This is committed to the 2.x branch
  upstream:
  .
-   http://bazaar.launchpad.net/~codership/galera/2.x/revision/167
+   https://bazaar.launchpad.net/~codership/galera/2.x/revision/167
 
 Files: *
 Copyright: 2007-2015 Codership Oy <info@codership.com>
@@ -116,4 +116,4 @@ License: CC-BY-SA-3.0
  distribute the resulting work only under the same, similar or a compatible
  license.
  .
- For more information, see http://creativecommons.org/licenses/by-sa/3.0/
+ For more information, see https://creativecommons.org/licenses/by-sa/3.0/
