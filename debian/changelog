@@ -1,3 +1,9 @@
+galera-3 (25.3.24-1) UNRELEASED; urgency=medium
+
+  * Open new changelog entry
+
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 15 Oct 2018 18:09:07 +0300
+
 galera-3 (25.3.24-1) unstable; urgency=medium
 
   [ Otto Kekäläinen ]
