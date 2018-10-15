@@ -1,4 +1,4 @@
-galera-3 (25.3.24-1) UNRELEASED; urgency=low
+galera-3 (25.3.24-1) unstable; urgency=medium
 
   [ Otto Kekäläinen ]
   * New upstream version 25.3.24
@@ -6,11 +6,20 @@ galera-3 (25.3.24-1) UNRELEASED; urgency=low
   * Add rudimentary autopkgtests
   * Make build reproducible by forcing an empty GNU build-id
   * Explicitly forbid tests if DEB_BUILD_OPTIONS has nocheck
+  * Add d/upstream/metadata file
+  * Update http -> https addresses where available
+  * Add 'terse' support in DEB_BUILD_OPTIONS
+  * Replace buildflags.mk with full default.mk dpkg settings
+  * Drop usage of _SYSTEMCTL_SKIP_REDIRECT from init script (Closes: #910471)
+  * Debian Policy 4.0.1: use priority 'optional' instead of 'extra'
+
+  [ Dimitri John Ledkov ]
+  * Do not run testsuite on armhf with arm64 kernel due to bus errors
 
   [ Daniel Kahn Gillmor ]
   * Modernize debugging symbols
 
- -- Otto Kekäläinen <otto@debian.org>  Sun, 14 Oct 2018 22:48:01 +0300
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 15 Oct 2018 16:24:30 +0300
 
 galera-3 (25.3.23-1) unstable; urgency=low
 
