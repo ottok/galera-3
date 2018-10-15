@@ -51,8 +51,6 @@ run reprotest:
     - eatmydata apt-get build-dep -y .
     - export DEB_BUILD_OPTIONS=nocheck
     - eatmydata reprotest . -- null &> reprotest.log
-  tags:
-    - privileged
 
 run piuparts:
   stage: test
@@ -67,6 +65,4 @@ run piuparts:
     - docker export ${CONTAINER_ID} | tar -C ${CHROOT_PATH} -xf -
     - mknod -m 666 ${CHROOT_PATH}/dev/urandom c 1 9
     - piuparts --hard-link -e ${CHROOT_PATH} ${WORKING_DIR}/*.deb
-  tags:
-    - privileged
 
