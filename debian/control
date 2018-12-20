@@ -6,7 +6,6 @@ Priority: optional
 Standards-Version: 4.2.1
 Build-Depends: check,
                debhelper (>= 9.20151219~),
-               libasio-dev,
                libboost-dev (>= 1.41),
                libboost-program-options-dev (>= 1.41),
                libssl-dev,
