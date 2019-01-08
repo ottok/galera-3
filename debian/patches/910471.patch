@@ -4,8 +4,6 @@ Date:   Mon Oct 15 11:33:07 2018 +0300
 
     Drop usage of _SYSTEMCTL_SKIP_REDIRECT from init script (Closes: #910471)
 
-diff --git a/garb/files/garb.sh b/garb/files/garb.sh
-index 3bd71f7..e35c520 100755
 --- a/garb/files/garb.sh
 +++ b/garb/files/garb.sh
 @@ -21,10 +21,6 @@
