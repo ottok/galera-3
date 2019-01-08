@@ -6,7 +6,12 @@ galera-3 (25.3.25-1) unstable; urgency=low
   [ Logan Rosen ]
   * Fix FTBFS against system asio by using bundled version instead (Closes: #914112)
 
- -- Otto Kekäläinen <otto@debian.org>  Tue, 08 Jan 2019 23:31:35 +0100
+  [ Samuel Thibault ]
+  * Fix FTBFS on hurd-i386 (Closes: #906305)
+  * Do not assume timestamps are strictly monotonous (Closes: #856237)
+  * Fix FTBFS on kfreebsd (Closes: #906081)
+
+ -- Otto Kekäläinen <otto@debian.org>  Wed, 09 Jan 2019 00:39:48 +0100
 
 galera-3 (25.3.24-1) unstable; urgency=medium
 
