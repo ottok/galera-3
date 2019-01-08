@@ -24,6 +24,7 @@ namespace galera
     public:
 
         static std::string const PARAM_LOG_CONFLICTS;
+        static std::string const PARAM_OPTIMISTIC_PA;
 
         static void register_params(gu::Config&);
 
@@ -105,7 +106,7 @@ namespace galera
             index_size_ = 0;
         }
 
-        void set_log_conflicts(const std::string& str);
+        void param_set(const std::string& key, const std::string& value);
 
     private:
 
@@ -178,6 +179,7 @@ namespace galera
         };
 
         int           version_;
+        gu::Config&   conf_;
         TrxMap        trx_map_;
         CertIndex     cert_index_;
         CertIndexNG   cert_index_ng_;
@@ -211,6 +213,7 @@ namespace galera
         unsigned int const max_length_check_; /* Mask how often to check */
 
         bool               log_conflicts_;
+        bool               optimistic_pa_;
     };
 }
 
