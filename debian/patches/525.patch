@@ -10,7 +10,7 @@ Forwarded: https://github.com/codership/galera/pull/525
 
 --- a/galerautils/src/gu_resolver.cpp
 +++ b/galerautils/src/gu_resolver.cpp
-@@ -258,7 +258,7 @@ out:
+@@ -270,7 +270,7 @@ out:
                  {
                      err = errno;
                  }

@@ -1,3 +1,9 @@
+galera-3 (25.3.26-1) unstable; urgency=medium
+
+  * New upstream version 25.3.26
+
+ -- Otto Kekäläinen <otto@debian.org>  Tue, 23 Apr 2019 13:23:35 +0300
+
 galera-3 (25.3.25-2) unstable; urgency=low
 
   [ Giovanni Mascellani ]
