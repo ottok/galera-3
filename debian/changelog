@@ -1,3 +1,10 @@
+galera-3 (25.3.26-2~exp1) experimental; urgency=medium
+
+  * Apply upstream patch for FTBFS on hppa, hurd and kfreebsd-*
+    (Closes: #927846)
+
+ -- Otto Kekäläinen <otto@debian.org>  Fri, 07 Jun 2019 09:49:57 +0300
+
 galera-3 (25.3.26-1) unstable; urgency=medium
 
   * New upstream version 25.3.26
