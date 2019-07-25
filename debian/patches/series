@@ -3,3 +3,4 @@
 526.patch
 527.patch
 927846.patch
+disable-sporadic-failing-tests.patch

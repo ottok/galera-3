@@ -1,0 +1,36 @@
+Author: Otto Kekäläinen <otto@debian.org>
+Date:   Thu Jul 25 14:04:04 2019 -0300
+
+    Disable test that apparently has a race condition and sporadically fails.
+    Upstream developer Teemu Ollakka confirmed that the failures in this test
+    were not a sign of a real bug.
+
+index d579b3e..7d1e248 100644
+--- a/galerautils/tests/SConscript
++++ b/galerautils/tests/SConscript
+@@ -27,7 +27,6 @@ gu_tests = env.Program(target = 'gu_test
+                             gu_fifo_test.c
+                             gu_uuid_test.c
+                             gu_dbug_test.c
+-                            gu_lock_step_test.c
+                             gu_str_test.c
+                             gu_utils_test.c
+                          '''))
+--- a/galerautils/tests/gu_tests.c
++++ b/galerautils/tests/gu_tests.c
+@@ -20,7 +20,6 @@
+ #include "gu_time_test.h"
+ #include "gu_fifo_test.h"
+ #include "gu_uuid_test.h"
+-#include "gu_lock_step_test.h"
+ #include "gu_str_test.h"
+ #include "gu_utils_test.h"
+ 
+@@ -39,7 +38,6 @@ static suite_creator_t suites[] =
+         gu_time_suite,
+         gu_fifo_suite,
+         gu_uuid_suite,
+-        gu_lock_step_suite,
+         gu_str_suite,
+         gu_utils_suite,
+         NULL
