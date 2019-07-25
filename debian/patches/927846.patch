@@ -12,8 +12,6 @@ in the error log and ignore future calls.
  galerautils/src/gu_thread.cpp | 17 ++++++++++++++++-
  1 file changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/galerautils/src/gu_thread.cpp b/galerautils/src/gu_thread.cpp
-index e307f6e3..40a956e9 100644
 --- a/galerautils/src/gu_thread.cpp
 +++ b/galerautils/src/gu_thread.cpp
 @@ -7,6 +7,7 @@
@@ -21,13 +19,13 @@ index e307f6e3..40a956e9 100644
  #include "gu_string_utils.hpp"
  #include "gu_throw.hpp"
 +#include "gu_logger.hpp"
-
+ 
  #include <iostream>
  #include <vector>
-@@ -78,8 +79,11 @@ gu::ThreadSchedparam gu::thread_get_schedparam(pthread_t thd)
+@@ -78,8 +79,11 @@ gu::ThreadSchedparam gu::thread_get_sche
      return ThreadSchedparam(policy, sp.sched_priority);
  }
-
+ 
 +static bool schedparam_not_supported(false);
 +
  void gu::thread_set_schedparam(pthread_t thd, const gu::ThreadSchedparam& sp)
@@ -36,7 +34,7 @@ index e307f6e3..40a956e9 100644
  #if defined(__sun__)
      struct sched_param spstr = { sp.prio(), { 0, } /* sched_pad array */};
  #else
-@@ -88,6 +92,17 @@ void gu::thread_set_schedparam(pthread_t thd, const gu::ThreadSchedparam& sp)
+@@ -88,6 +92,17 @@ void gu::thread_set_schedparam(pthread_t
      int err;
      if ((err = pthread_setschedparam(thd, sp.policy(), &spstr)) != 0)
      {

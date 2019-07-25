@@ -1,3 +1,10 @@
+galera-3 (25.3.27-1~exp1) experimental; urgency=medium
+
+  * New upstream version 25.3.27
+  * Bugfix: Actually apply new patch that was omitted from patches/series
+
+ -- Otto Kekäläinen <otto@debian.org>  Thu, 25 Jul 2019 14:11:56 -0300
+
 galera-3 (25.3.26-2~exp1) experimental; urgency=medium
 
   * Apply upstream patch for FTBFS on hppa, hurd and kfreebsd-*
