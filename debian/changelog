@@ -1,16 +1,12 @@
-galera-3 (25.3.27-1~exp1) experimental; urgency=medium
+galera-3 (25.3.27-1) unstable; urgency=medium
 
   * New upstream version 25.3.27
-  * Bugfix: Actually apply new patch that was omitted from patches/series
-
- -- Otto Kekäläinen <otto@debian.org>  Thu, 25 Jul 2019 14:11:56 -0300
-
-galera-3 (25.3.26-2~exp1) experimental; urgency=medium
-
+  * Include full CC-BY-SA-3.0 license in debian/copyright to satisfy Lintian
+  * Drop manual dbgsym creation as this is nowadays automatic
   * Apply upstream patch for FTBFS on hppa, hurd and kfreebsd-*
     (Closes: #927846)
 
- -- Otto Kekäläinen <otto@debian.org>  Fri, 07 Jun 2019 09:49:57 +0300
+ -- Otto Kekäläinen <otto@debian.org>  Sat, 27 Jul 2019 16:33:43 -0300
 
 galera-3 (25.3.26-1) unstable; urgency=medium
 
