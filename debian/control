@@ -3,7 +3,7 @@ Maintainer: Debian MySQL Maintainers <pkg-mysql-maint@lists.alioth.debian.org>
 Uploaders: Otto Kekäläinen <otto@debian.org>
 Section: database
 Priority: optional
-Standards-Version: 4.4.0
+Standards-Version: 4.4.1
 Build-Depends: check,
                debhelper (>= 9.20151219~),
                libboost-dev (>= 1.41),
