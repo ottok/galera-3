@@ -1,12 +1,13 @@
-galera-3 (25.3.28-2) UNRELEASED; urgency=medium
+galera-3 (25.3.28-2) unstable; urgency=low
 
+  [ Debian Janitor ]
   * Use secure URI in debian/watch.
   * Update standards version to 4.4.1, no changes needed.
   * Bump debhelper from old 9 to 12.
   * Fix field name typos in debian/copyright.
   * Remove obsolete fields Name, Contact from debian/upstream/metadata.
 
- -- Debian Janitor <janitor@jelmer.uk>  Mon, 04 Nov 2019 01:28:00 +0000
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 16 Dec 2019 21:32:17 +0200
 
 galera-3 (25.3.28-1) unstable; urgency=medium
 
