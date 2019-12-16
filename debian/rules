@@ -61,4 +61,4 @@ override_dh_installinit-arch:
 	dh_installinit -n --name=garb -- defaults 18 22
 
 %:
-	dh $@ --list-missing
+	dh $@
