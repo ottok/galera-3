@@ -1,3 +1,9 @@
+galera-3 (25.3.29-2) unstable; urgency=medium
+
+  * New source-only upload so package can enter Debian testing
+
+ -- Otto Kekäläinen <otto@debian.org>  Sun, 23 Feb 2020 10:40:54 +0200
+
 galera-3 (25.3.29-1) unstable; urgency=medium
 
   * New upstream version 25.3.29
