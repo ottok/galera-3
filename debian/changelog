@@ -1,8 +1,8 @@
-galera-3 (25.3.29-3) UNRELEASED; urgency=medium
+galera-3 (25.3.29-3~exp1) experimental; urgency=medium
 
-  * Open new changelog entry. This will be replaced by gbp-dch.
+  * Reduce the runtime overhead for may EVS tests (Closes: #958040)
 
- -- Otto Kekäläinen <otto@debian.org>  Sat, 16 May 2020 12:01:01 +0300
+ -- Otto Kekäläinen <otto@debian.org>  Thu, 04 Jun 2020 17:20:49 +0300
 
 galera-3 (25.3.29-2) unstable; urgency=medium
 
