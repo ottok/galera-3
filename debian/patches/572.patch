@@ -1,0 +1,18 @@
+Subject: Fix armel test failure, Debian#958040
+From: https://github.com/codership/galera/pull/527
+
+--- a/gcomm/test/check_trace.cpp
++++ b/gcomm/test/check_trace.cpp
+@@ -272,10 +272,10 @@ void gcomm::PropagationMatrix::propagate
+         }
+         if (handle_timers)
+         {
+-            // Assume that time progresses in millisecond intervals
++            // Assume that time progresses in 50 millisecond intervals
+             // and that is fine enough granularity for all tests
+             // which deal with timers.
+-            gu::datetime::SimClock::inc_time(gu::datetime::MSec);
++            gu::datetime::SimClock::inc_time(50*gu::datetime::MSec);
+         }
+     }
+     while (all_in == false);
