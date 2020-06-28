@@ -1,6 +1,10 @@
 #!/usr/bin/make -f
-export DEB_BUILD_HARDENING=1
+
+# Enable Debian Hardening
+# https://wiki.debian.org/Hardening
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 DPKG_EXPORT_BUILDFLAGS = 1
+# Include all defaults, includes buildflags.mk
 include /usr/share/dpkg/default.mk
 
 # Use bundled asio, since system asio is too new (> 1.10.8)
