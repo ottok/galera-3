@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2017 Codership Oy <info@codership.com>
+ * Copyright (C) 2008-2020 Codership Oy <info@codership.com>
  *
  * $Id$
  */
@@ -173,8 +173,8 @@ struct gcs_conn
     gcs_fc_t     stfc; // state transfer FC object
 
     /* #603, #606 join control */
-    bool        volatile need_to_join;
     gcs_seqno_t volatile join_seqno;
+    bool        volatile need_to_join;
 
     /* sync control */
     bool         sync_sent_;
@@ -685,11 +685,18 @@ _release_flow_control (gcs_conn_t* conn)
 static void
 gcs_become_primary (gcs_conn_t* conn)
 {
+    assert(conn->join_seqno == GCS_SEQNO_ILL ||
+           conn->state == GCS_CONN_JOINER    ||
+           conn->state == GCS_CONN_OPEN /* joiner that has received NON_PRIM */);
+
     if (!gcs_shift_state (conn, GCS_CONN_PRIMARY)) {
         gu_fatal ("Protocol violation, can't continue");
         gcs_close (conn);
         abort();
     }
+
+    conn->join_seqno   = GCS_SEQNO_NIL;
+    conn->need_to_join = false;
 
     int ret;
 
@@ -794,6 +801,7 @@ gcs_become_joined (gcs_conn_t* conn)
     /* See also gcs_handle_act_conf () for a case of cluster bootstrapping */
     if (gcs_shift_state (conn, GCS_CONN_JOINED)) {
         conn->fc_offset    = conn->queue_len;
+        conn->join_seqno   = GCS_SEQNO_NIL;
         conn->need_to_join = false;
         gu_debug("Become joined, FC offset %ld", conn->fc_offset);
         /* One of the cases when the node can become SYNCED */
@@ -872,12 +880,12 @@ _reset_pkt_size(gcs_conn_t* conn)
     }
 }
 
-static long
-_join (gcs_conn_t* conn, gcs_seqno_t seqno)
+static int
+s_join (gcs_conn_t* conn)
 {
-    long err;
+    int err;
 
-    while (-EAGAIN == (err = gcs_core_send_join (conn->core, seqno)))
+    while (-EAGAIN == (err = gcs_core_send_join (conn->core, conn->join_seqno)))
         usleep (10000);
 
     switch (err)
@@ -909,6 +917,9 @@ gcs_handle_act_conf (gcs_conn_t* conn, const void* action)
     {
         /* reset flow control as membership is most likely changed */
         if (!gu_mutex_lock (&conn->fc_lock)) {
+            /* wake up send monitor if it was paused */
+            if (conn->stop_count > 0) gcs_sm_continue(conn->sm);
+
             conn->stop_sent_  = 0;
             conn->stop_count  = 0;
             conn->conf_id     = conf->conf_id;
@@ -924,9 +935,6 @@ gcs_handle_act_conf (gcs_conn_t* conn, const void* action)
         }
 
         conn->sync_sent(false);
-
-        // need to wake up send monitor if it was paused during CC
-        gcs_sm_continue(conn->sm);
     }
     gu_fifo_release (conn->recv_q);
 
@@ -1006,7 +1014,7 @@ gcs_handle_act_conf (gcs_conn_t* conn, const void* action)
         /* #603, #606 - duplicate JOIN msg in case we lost it */
         assert (conf->conf_id >= 0);
 
-        if (conn->need_to_join) _join (conn, conn->join_seqno);
+        if (conn->need_to_join) s_join (conn);
 
         break;
     default:
@@ -1270,22 +1278,31 @@ static void *gcs_recv_thread (void *arg)
 
         if (gu_unlikely(ret <= 0)) {
 
-            if (-ETIMEDOUT == ret && _handle_timeout(conn)) continue;
+            gu_debug ("gcs_core_recv returned %d: %s", ret, strerror(-ret));
 
-            struct gcs_recv_act* err_act =
-                (struct gcs_recv_act*) gu_fifo_get_tail(conn->recv_q);
+            if (-ETIMEDOUT == ret && _handle_timeout(conn)) continue;
 
             assert (NULL          == rcvd.act.buf);
             assert (0             == rcvd.act.buf_len);
-            assert (GCS_ACT_ERROR == rcvd.act.type);
+            assert (GCS_ACT_ERROR == rcvd.act.type ||
+                    GCS_ACT_INCONSISTENCY == rcvd.act.type);
             assert (GCS_SEQNO_ILL == rcvd.id);
+
+            if (GCS_ACT_INCONSISTENCY == rcvd.act.type) {
+                /* In the case of inconsistency our concern is to report it to
+                 * replicator ASAP. Current contents of the slave queue are
+                 * meaningless. */
+                gu_fifo_clear(conn->recv_q);
+            }
+
+            struct gcs_recv_act* err_act =
+                (struct gcs_recv_act*) gu_fifo_get_tail(conn->recv_q);
 
             err_act->rcvd     = rcvd;
             err_act->local_id = GCS_SEQNO_ILL;
 
             GCS_FIFO_PUSH_TAIL (conn, rcvd.act.buf_len);
 
-            gu_debug ("gcs_core_recv returned %d: %s", ret, strerror(-ret));
             break;
         }
 
@@ -1997,12 +2014,18 @@ gcs_set_last_applied (gcs_conn_t* conn, gcs_seqno_t seqno)
 }
 
 long
-gcs_join (gcs_conn_t* conn, gcs_seqno_t seqno)
+gcs_join (gcs_conn_t* conn, gcs_seqno_t const seqno)
 {
-    conn->join_seqno   = seqno;
-    conn->need_to_join = true;
+    assert(conn->join_seqno <= seqno || seqno < 0);
 
-    return _join (conn, seqno);
+    if (seqno < 0 || seqno >= conn->join_seqno)
+    {
+        conn->join_seqno   = seqno;
+        conn->need_to_join = true;
+        return s_join (conn);
+    }
+
+    return 0;
 }
 
 gcs_seqno_t gcs_local_sequence(gcs_conn_t* conn)
