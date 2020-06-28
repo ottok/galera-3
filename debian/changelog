@@ -1,8 +1,10 @@
-galera-3 (25.3.29-3~exp1) experimental; urgency=medium
+galera-3 (25.3.30-1) unstable; urgency=medium
 
-  * Reduce the runtime overhead for may EVS tests (Closes: #958040)
+  * New upstream version 25.3.30
+  * Reduce the runtime overhead for may EVS tests so armel builds can
+    pass again (Closes: #958040)
 
- -- Otto Kekäläinen <otto@debian.org>  Thu, 04 Jun 2020 17:20:49 +0300
+ -- Otto Kekäläinen <otto@debian.org>  Sun, 28 Jun 2020 15:46:33 +0300
 
 galera-3 (25.3.29-2) unstable; urgency=medium
 

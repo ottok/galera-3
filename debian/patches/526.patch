@@ -12,8 +12,8 @@ Some OS do not provide sub-tick time granularity, and ticks can typically be
 
 --- a/gcs/src/unit_tests/gcs_sm_test.cpp
 +++ b/gcs/src/unit_tests/gcs_sm_test.cpp
-@@ -280,7 +280,7 @@ START_TEST (gcs_sm_test_pause)
-     long long tmp;
+@@ -359,7 +359,7 @@ START_TEST (gcs_sm_test_pause)
+ 
      gcs_sm_stats_get (sm, &q_len, &q_len_max, &q_len_min, &q_len_avg,
                        &tmp, &paused_avg);
 -    fail_if (tmp <= paused_ns); paused_ns = tmp;
