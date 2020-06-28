@@ -1,0 +1,13 @@
+Forwarded: https://github.com/codership/galera/issues/575
+
+--- a/galerautils/src/gu_thread.cpp
++++ b/galerautils/src/gu_thread.cpp
+@@ -94,7 +94,7 @@ void gu::thread_set_schedparam(pthread_t
+     {
+         if (err == ENOSYS)
+         {
+-            log_warn << "Function pthread_setschedparam() is not implmented "
++            log_warn << "Function pthread_setschedparam() is not implemented "
+                      << "in this system. Future attempts to change scheduling "
+                      << "priority will be no-op";
+ 
