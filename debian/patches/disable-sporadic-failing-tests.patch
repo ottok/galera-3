@@ -5,17 +5,16 @@ Date:   Thu Jul 25 14:04:04 2019 -0300
     Upstream developer Teemu Ollakka confirmed that the failures in this test
     were not a sign of a real bug.
 
-index d579b3e..7d1e248 100644
 --- a/galerautils/tests/SConscript
 +++ b/galerautils/tests/SConscript
-@@ -27,7 +27,6 @@ gu_tests = env.Program(target = 'gu_test
-                             gu_fifo_test.c
-                             gu_uuid_test.c
-                             gu_dbug_test.c
--                            gu_lock_step_test.c
-                             gu_str_test.c
-                             gu_utils_test.c
-                          '''))
+@@ -25,7 +25,6 @@ gu_tests_srcs = Split('''
+                         gu_fifo_test.c
+                         gu_uuid_test.c
+                         gu_dbug_test.c
+-                        gu_lock_step_test.c
+                         gu_str_test.c
+                         gu_utils_test.c
+                       ''')
 --- a/galerautils/tests/gu_tests.c
 +++ b/galerautils/tests/gu_tests.c
 @@ -20,7 +20,6 @@
@@ -36,7 +35,7 @@ index d579b3e..7d1e248 100644
          NULL
 --- a/gcs/src/unit_tests/SConscript
 +++ b/gcs/src/unit_tests/SConscript
-@@ -41,7 +41,6 @@ gcs_tests_sources = Split('''
+@@ -44,7 +44,6 @@ gcs_tests_sources = Split('''
                               gcs_group_test.cpp
                               gcs_memb_test.cpp
                               ../gcs_group.cpp
