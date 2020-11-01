@@ -1525,7 +1525,7 @@ long gcs_destroy (gcs_conn_t *conn)
     gu_cond_t tmp_cond;
     gu_cond_init (&tmp_cond, NULL);
 
-    if ((err = gcs_sm_enter (conn->sm, &tmp_cond, false, true))) // need an error here
+    if (!(err = gcs_sm_enter (conn->sm, &tmp_cond, false, true))) // need an error here
     {
         if (GCS_CONN_CLOSED != conn->state)
         {
@@ -1538,8 +1538,7 @@ long gcs_destroy (gcs_conn_t *conn)
             return -EBADFD;
         }
 
-        /* this should cancel all recv calls */
-        gu_fifo_destroy (conn->recv_q);
+        gcs_sm_leave (conn->sm);
 
         gcs_shift_state (conn, GCS_CONN_DESTROYED);
 //DELETE        conn->err   = -EBADFD;
@@ -1547,11 +1546,11 @@ long gcs_destroy (gcs_conn_t *conn)
          * to acquire the lock and give up gracefully */
     }
     else {
-        gcs_sm_leave (conn->sm);
-        gu_cond_destroy (&tmp_cond);
-        err = -EBADFD;
-        return err;
+        gu_debug("gcs_destroy: gcs_sm_enter() err = %d", err);
+        // We should still cleanup resources
     }
+
+    gu_fifo_destroy (conn->recv_q);
 
     gu_cond_destroy (&tmp_cond);
     gcs_sm_destroy (conn->sm);
@@ -2055,6 +2054,8 @@ gcs_get_stats (gcs_conn_t* conn, struct gcs_stats* stats)
     stats->fc_ssent    = conn->stats_fc_stop_sent;
     stats->fc_csent    = conn->stats_fc_cont_sent;
     stats->fc_received = conn->stats_fc_received;
+    stats->fc_active   = conn->stop_count > 0;
+    stats->fc_requested= conn->stop_sent_ > 0;
 }
 
 void

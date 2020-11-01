@@ -357,7 +357,7 @@ gcs_core_send (gcs_core_t*          const conn,
         size_t to_copy = chunk_size;
 
         while (to_copy > 0) {        // gather action bufs into one
-            if (to_copy < left) {
+            if (to_copy <= left) {
                 memcpy (dst, ptr, to_copy);
                 ptr     += to_copy;
                 left    -= to_copy;
@@ -555,7 +555,7 @@ core_handle_act_msg (gcs_core_t*          core,
 #else
             assert (NULL == act->act.buf);
 #endif
-            act->sender_idx = msg->sender_idx;
+            assert(act->sender_idx == msg->sender_idx);
 
             if (gu_likely(!my_msg)) {
                 /* foreign action, must be passed from gcs_group */
