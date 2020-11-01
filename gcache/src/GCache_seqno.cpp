@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 Codership Oy <info@codership.com>
+ * Copyright (C) 2009-2020 Codership Oy <info@codership.com>
  */
 
 #include "gcache_bh.hpp"
@@ -14,14 +14,14 @@ namespace gcache
 {
     /*!
      * Reinitialize seqno sequence (after SST or such)
-     * Clears seqno->ptr map // and sets seqno_min to seqno.
+     * Clears seqno->ptr map // and sets seqno_min to s.
      */
     void
     GCache::seqno_reset (const gu::UUID& g, seqno_t const s)
     {
         gu::Lock lock(mtx);
 
-        assert(seqno2ptr.empty() || seqno_max == seqno2ptr.rbegin()->first);
+        assert(seqno2ptr.empty() || seqno_max == seqno2ptr.index_back());
 
         if (g == gid && s != SEQNO_ILL && seqno_max >= s)
         {
@@ -30,6 +30,7 @@ namespace gcache
                 discard_tail(s);
                 seqno_max = s;
                 seqno_released = s;
+                assert(seqno_max == seqno2ptr.index_back());
             }
             return;
         }
@@ -44,7 +45,7 @@ namespace gcache
         rb.seqno_reset();
         mem.seqno_reset();
 
-        seqno2ptr.clear();
+        seqno2ptr.clear(SEQNO_NONE);
         seqno_max = SEQNO_NONE;
     }
 
@@ -53,8 +54,8 @@ namespace gcache
      */
     void
     GCache::seqno_assign (const void* const ptr,
-                          int64_t     const seqno_g,
-                          int64_t     const seqno_d)
+                          seqno_t     const seqno_g,
+                          seqno_t     const seqno_d)
     {
         gu::Lock lock(mtx);
 
@@ -66,29 +67,37 @@ namespace gcache
 
         if (gu_likely(seqno_g > seqno_max))
         {
-            seqno2ptr.insert (seqno2ptr.end(), seqno2ptr_pair_t(seqno_g, ptr));
             seqno_max = seqno_g;
         }
         else
         {
-            // this should never happen. seqnos should be assinged in TO.
-            const std::pair<seqno2ptr_iter_t, bool>& res(
-                seqno2ptr.insert (seqno2ptr_pair_t(seqno_g, ptr)));
+            seqno2ptr_iter_t const i(seqno2ptr.find(seqno_g));
 
-            if (false == res.second)
+            if (i != seqno2ptr.end())
             {
-                gu_throw_fatal <<"Attempt to reuse the same seqno: " << seqno_g
-                               <<". New ptr = " << ptr << ", previous ptr = "
-                               << res.first->second;
+                const void* const prev_ptr(*i);
+
+                if (!seqno2ptr_t::not_set(prev_ptr))
+                {
+                    const BufferHeader* const prev_bh(ptr2BH(prev_ptr));
+                    assert(0);
+                    gu_throw_fatal << "Attempt to reuse the same seqno: "
+                                   << seqno_g <<". New buffer: " << bh
+                                   << ", previous buffer: " << prev_bh;
+                }
             }
+
+            seqno_released = std::min(seqno_released, seqno_g - 1);
         }
+
+        seqno2ptr.insert(seqno_g, ptr);
 
         bh->seqno_g = seqno_g;
         bh->seqno_d = seqno_d;
     }
 
     void
-    GCache::seqno_release (int64_t const seqno)
+    GCache::seqno_release (seqno_t const seqno)
     {
         assert (seqno > 0);
         /* The number of buffers scheduled for release is unpredictable, so
@@ -114,9 +123,9 @@ namespace gcache
 
             assert(seqno >= seqno_released);
 
-            seqno2ptr_iter_t it(seqno2ptr.upper_bound(seqno_released));
+            seqno_t idx(seqno2ptr.upper_bound(seqno_released));
 
-            if (gu_unlikely(it == seqno2ptr.end()))
+            if (gu_unlikely(idx == seqno2ptr.index_end()))
             {
                 /* This means that there are no elements with
                  * seqno following seqno_released - and this should not
@@ -137,8 +146,8 @@ namespace gcache
             batch_size += (new_gap >= old_gap) * min_batch_size;
             old_gap = new_gap;
 
-            int64_t const start(it->first - 1);
-            int64_t const end  (seqno - start >= 2*batch_size ?
+            seqno_t const start(idx - 1);
+            seqno_t const end  (seqno - start >= 2*batch_size ?
                                 start + batch_size : seqno);
 #ifndef NDEBUG
             if (params.debug())
@@ -148,28 +157,29 @@ namespace gcache
                          << batch_size << ", end: " << end;
             }
 #endif
-            for (;(loop = (it != seqno2ptr.end())) && it->first <= end;)
+            while((loop = (idx < seqno2ptr.index_end())) && idx <= end)
             {
-                assert(it->first != SEQNO_NONE);
-                BufferHeader* const bh(ptr2BH(it->second));
-                assert (bh->seqno_g == it->first);
+                assert(idx != SEQNO_NONE);
+                BufferHeader* const bh(ptr2BH(seqno2ptr[idx]));
+                assert (bh->seqno_g == idx);
 #ifndef NDEBUG
-                if (!(seqno_released + 1 == it->first ||
+                if (!(seqno_released + 1 == idx ||
                       seqno_released == SEQNO_NONE))
                 {
                     log_info << "seqno_released: " << seqno_released
-                             << "; it->first: " << it->first
-                             << "; seqno2ptr.begin: " <<seqno2ptr.begin()->first
+                             << "; idx: " << idx
+                             << "; seqno2ptr.begin: " <<seqno2ptr.index_begin()
                              << "\nstart: " << start << "; end: " << end
                              << " batch_size: " << batch_size << "; gap: "
                              << new_gap << "; seqno_max: " << seqno_max;
-                    assert(seqno_released + 1 == it->first ||
+                    assert(seqno_released + 1 == idx ||
                            seqno_released == SEQNO_NONE);
                 }
 #endif
-                ++it; /* free_common() below may erase current element,
-                       * so advance iterator before calling free_common()*/
                 if (gu_likely(!BH_is_released(bh))) free_common(bh);
+                /* free_common() could modify a map, look for next unreleased
+                 * seqno. */
+                idx = seqno2ptr.upper_bound(idx);
             }
 
             assert (loop || seqno == seqno_released);
@@ -183,17 +193,20 @@ namespace gcache
      * Move lock to a given seqno. Throw gu::NotFound if seqno is not in cache.
      * @throws NotFound
      */
-    void GCache::seqno_lock (int64_t const seqno_g)
+    void GCache::seqno_lock (seqno_t const seqno_g)
     {
         gu::Lock lock(mtx);
 
-        if (seqno2ptr.find(seqno_g) == seqno2ptr.end()) throw gu::NotFound();
+        assert(seqno_g > 0);
 
-        if (seqno_locked != SEQNO_NONE)
-        {
-            cond.signal();
-        }
-        seqno_locked = seqno_g;
+        assert(SEQNO_MAX == seqno_locked || seqno_locked_count > 0);
+        assert(0   == seqno_locked_count || seqno_locked < SEQNO_MAX);
+
+        seqno2ptr.at(seqno_g); /* check that the element exists */
+
+        seqno_locked_count++;
+
+        if (seqno_g < seqno_locked) seqno_locked = seqno_g;
     }
 
     /*!
@@ -201,31 +214,15 @@ namespace gcache
      * Moves lock to the given seqno.
      * @throws NotFound
      */
-    const void* GCache::seqno_get_ptr (int64_t const seqno_g,
-                                       int64_t&      seqno_d,
+    const void* GCache::seqno_get_ptr (seqno_t const seqno_g,
+                                       seqno_t&      seqno_d,
                                        ssize_t&      size)
     {
-        const void* ptr(0);
+        const void* ptr;
 
         {
             gu::Lock lock(mtx);
-
-            seqno2ptr_iter_t p = seqno2ptr.find(seqno_g);
-
-            if (p != seqno2ptr.end())
-            {
-                if (seqno_locked != SEQNO_NONE)
-                {
-                    cond.signal();
-                }
-                seqno_locked = seqno_g;
-
-                ptr = p->second;
-            }
-            else
-            {
-                throw gu::NotFound();
-            }
+            ptr = seqno2ptr.at(seqno_g);
         }
 
         assert (ptr);
@@ -239,7 +236,7 @@ namespace gcache
 
     size_t
     GCache::seqno_get_buffers (std::vector<Buffer>& v,
-                               int64_t const start)
+                               seqno_t const start)
     {
         size_t const max(v.size());
 
@@ -250,25 +247,20 @@ namespace gcache
         {
             gu::Lock lock(mtx);
 
+            assert(seqno_locked <= start);
+            // the caller should have locked the range first
+
             seqno2ptr_iter_t p = seqno2ptr.find(start);
 
-            if (p != seqno2ptr.end())
+            if (p != seqno2ptr.end() && *p)
             {
-                if (seqno_locked != SEQNO_NONE)
-                {
-                    cond.signal();
-                }
-
-                seqno_locked = start;
-
                 do {
-                    assert (p->first == int64_t(start + found));
-                    assert (p->second);
-                    v[found].set_ptr(p->second);
+                    assert(seqno2ptr.index(p) == seqno_t(start + found));
+                    assert(*p);
+                    v[found].set_ptr(*p);
                 }
-                while (++found < max && ++p != seqno2ptr.end() &&
-                       p->first == int64_t(start + found));
-                /* the latter condition ensures seqno continuty, #643 */
+                while (++found < max && ++p != seqno2ptr.end() && *p);
+                /* the last condition ensures seqno continuty, #643 */
             }
         }
 
@@ -277,7 +269,7 @@ namespace gcache
         {
             const BufferHeader* const bh (ptr2BH(v[i].ptr()));
 
-            assert (bh->seqno_g == int64_t(start + i));
+            assert (bh->seqno_g == seqno_t(start + i));
             Limits::assert_size(bh->size);
 
             v[i].set_other (bh->seqno_g,
@@ -294,7 +286,18 @@ namespace gcache
     void GCache::seqno_unlock ()
     {
         gu::Lock lock(mtx);
-        seqno_locked = SEQNO_NONE;
-        cond.signal();
+
+        if (seqno_locked_count > 0)
+        {
+            assert(seqno_locked < SEQNO_MAX);
+            seqno_locked_count--;
+            if (0 == seqno_locked_count) seqno_locked = SEQNO_MAX;
+        }
+        else
+        {
+            assert(SEQNO_MAX == seqno_locked);
+            assert(0); // something wrong with the caller's logic
+            seqno_locked = SEQNO_MAX;
+        }
     }
 }
