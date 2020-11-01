@@ -2,6 +2,7 @@ galera-3 (25.3.31-1) unstable; urgency=medium
 
   * New upstream version 25.3.31
   * Drop patches applied upstream
+  * Remove d/copyright references to crc32 library that was removed upstream
 
  -- Otto Kekäläinen <otto@debian.org>  Sun, 01 Nov 2020 21:03:41 +0200
 
