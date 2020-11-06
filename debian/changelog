@@ -1,3 +1,10 @@
+galera-3 (25.3.31-2) unstable; urgency=medium
+
+  * Fix i386 builds by forcing Scons to use DEB_HOST_ARCH if available
+  * Fix arm64 build failure due to crc32 issue
+
+ -- Otto Kekäläinen <otto@debian.org>  Fri, 06 Nov 2020 23:18:26 +0200
+
 galera-3 (25.3.31-1) unstable; urgency=medium
 
   [ Otto Kekäläinen ]
