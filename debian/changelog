@@ -1,8 +1,12 @@
-galera-3 (25.3.33-1) UNRELEASED; urgency=medium
+galera-3 (25.3.33-1) unstable; urgency=low
 
   * New upstream version 25.3.33
+  * Follow upstream change and switch from SCons to CMake. This
+    is necessary, otherwise building from sources would fail.
+  * Remove patches applied upstream or obsoleted by SCons->CMake change
+  * Add Lintian overrides for libgalera_smm.so that are intentional
 
- -- Otto Kekäläinen <otto@debian.org>  Sat, 22 May 2021 09:14:31 -0700
+ -- Otto Kekäläinen <otto@debian.org>  Sat, 22 May 2021 11:49:07 -0700
 
 galera-3 (25.3.31-2) unstable; urgency=medium
 
