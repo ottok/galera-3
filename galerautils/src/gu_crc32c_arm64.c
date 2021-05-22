@@ -20,12 +20,11 @@
 #include <stdbool.h>
 
 #include <arm_acle.h>
-#include <arm_neon.h>
 
 static inline gu_crc32c_t
 crc32c_arm64_tail7(gu_crc32c_t state, const uint8_t* ptr, size_t len)
 {
-    assert(len < 7);
+    assert(len < 8);
 
     if (len >= 4)
     {
@@ -71,19 +70,44 @@ gu_crc32c_arm64(gu_crc32c_t state, const void* data, size_t len)
 
 #include <sys/auxv.h>
 
+#if defined(__FreeBSD__)
+/* Imitate getauxval() interface */
+static unsigned long int
+getauxval(unsigned long int const type)
+{
+    unsigned long int ret;
+    if (0 != elf_aux_info(type, &ret, sizeof(ret))) ret = 0;
+    return ret;
+}
+#endif /* FreeBSD */
+
+#if defined(HWCAP_CRC32)
+#    define GU_AT_HWCAP    AT_HWCAP
+#    define GU_HWCAP_CRC32 HWCAP_CRC32
+#elif defined(HWCAP2_CRC32)
+#    define GU_AT_HWCAP    AT_HWCAP2
+#    define GU_HWCAP_CRC32 HWCAP2_CRC32
+#endif /* HWCAP_CRC32 */
+
 gu_crc32c_func_t
 gu_crc32c_hardware()
 {
-    unsigned long int const hwcaps = getauxval(AT_HWCAP);
-    if (hwcaps & HWCAP_CRC32)
+#if defined(GU_AT_HWCAP)
+    unsigned long int const hwcaps = getauxval(GU_AT_HWCAP);
+    if (hwcaps & GU_HWCAP_CRC32)
     {
         gu_info ("CRC-32C: using hardware acceleration.");
         return gu_crc32c_arm64;
     }
     else
     {
+        gu_info ("CRC-32C: hardware does not have CRC-32C capabilities.");
         return NULL;
     }
+#else
+    gu_info ("CRC-32C: compiled without hardware acceleration support.");
+    return NULL;
+#endif /* GU_AT_HWCAP */
 }
 
 #endif /* GU_CRC32C_ARM64 */
