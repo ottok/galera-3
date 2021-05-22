@@ -1,5 +1,3 @@
 910471.patch
 disable-sporadic-failing-tests.patch
-spelling.patch
-arm-crc32-fix.patch
 salsa-ci-i386-builds.patch

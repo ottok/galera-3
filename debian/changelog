@@ -1,3 +1,9 @@
+galera-3 (25.3.33-1) UNRELEASED; urgency=medium
+
+  * New upstream version 25.3.33
+
+ -- Otto Kekäläinen <otto@debian.org>  Sat, 22 May 2021 09:14:31 -0700
+
 galera-3 (25.3.31-2) unstable; urgency=medium
 
   * Fix i386 builds by forcing Scons to use DEB_HOST_ARCH if available
