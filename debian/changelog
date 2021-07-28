@@ -1,3 +1,10 @@
+galera-3 (25.3.34-1) UNRELEASED; urgency=medium
+
+  * New upstream version 25.3.34. Includes multiple bug fixes, see
+    https://github.com/codership/documentation/blob/master/release-notes/release-notes-galera-25.3.34.txt
+
+ -- Otto Kekäläinen <otto@debian.org>  Wed, 28 Jul 2021 08:54:13 -0700
+
 galera-3 (25.3.33-1) unstable; urgency=low
 
   * New upstream version 25.3.33
