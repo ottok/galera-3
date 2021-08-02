@@ -1,9 +1,11 @@
-galera-3 (25.3.34-1) UNRELEASED; urgency=medium
+galera-3 (25.3.34-1) unstable; urgency=medium
 
   * New upstream version 25.3.34. Includes multiple bug fixes, see
     https://github.com/codership/documentation/blob/master/release-notes/release-notes-galera-25.3.34.txt
+  * Restore CK_TIMEOUT_MULTIPLIER in debian rules to avoid having
+    various slow builds and CI runs fail in vain
 
- -- Otto Kekäläinen <otto@debian.org>  Wed, 28 Jul 2021 08:54:13 -0700
+ -- Otto Kekäläinen <otto@debian.org>  Mon, 02 Aug 2021 13:20:30 -0700
 
 galera-3 (25.3.33-1) unstable; urgency=low
 
