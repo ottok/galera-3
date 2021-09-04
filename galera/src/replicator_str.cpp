@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2010-2020 Codership Oy <info@codership.com>
+// Copyright (C) 2010-2021 Codership Oy <info@codership.com>
 //
 
 #include "replicator_smm.hpp"
@@ -715,7 +715,7 @@ ReplicatorSMM::request_state_transfer (void* recv_ctx,
                 commit_monitor_.set_initial_position(-1);
                 commit_monitor_.set_initial_position(sst_seqno_);
             }
-
+            last_st_type_ = ST_TYPE_SST;
             log_debug << "Installed new state: " << state_uuid_ << ":"
                       << sst_seqno_;
         }
@@ -725,6 +725,9 @@ ReplicatorSMM::request_state_transfer (void* recv_ctx,
         assert (state_uuid_ == group_uuid);
     }
 
+    // Clear seqno from state file. Otherwise if node gets killed
+    // during IST, it may recover to incorrect position.
+    st_.set(state_uuid_, WSREP_SEQNO_UNDEFINED, safe_to_bootstrap_);
     st_.mark_safe();
 
     if (req->ist_len() > 0)
@@ -738,7 +741,7 @@ ReplicatorSMM::request_state_transfer (void* recv_ctx,
             ist_receiver_.ready();
             recv_IST(recv_ctx);
             sst_seqno_ = ist_receiver_.finished();
-
+            last_st_type_ = ST_TYPE_IST;
             // Note: apply_monitor_ must be drained to avoid race between
             // IST appliers and GCS appliers, GCS action source may
             // provide actions that have already been applied.
@@ -761,6 +764,7 @@ void ReplicatorSMM::recv_IST(void* recv_ctx)
     {
         TrxHandle* trx(0);
         int err;
+        bool fail(false);
         try
         {
             if ((err = ist_receiver_.recv(&trx)) == 0)
@@ -786,7 +790,15 @@ void ReplicatorSMM::recv_IST(void* recv_ctx)
                     // processed on donor, just adjust states here
                     trx->set_state(TrxHandle::S_REPLICATING);
                     trx->set_state(TrxHandle::S_CERTIFYING);
-                    apply_trx(recv_ctx, trx);
+                    try
+                    {
+                        apply_trx(recv_ctx, trx);
+                    }
+                    catch (...)
+                    {
+                         st_.mark_corrupt();
+                         throw;
+                    }
                     GU_DBUG_SYNC_WAIT("recv_IST_after_apply_trx");
                 }
             }
@@ -796,15 +808,25 @@ void ReplicatorSMM::recv_IST(void* recv_ctx)
             }
             trx->unref();
         }
-        catch (gu::Exception& e)
+        catch (std::exception& e)
         {
             log_fatal << "receiving IST failed, node restart required: "
                       << e.what();
+            fail = true;
+        }
+        catch (...)
+        {
+            log_fatal << "receiving IST failed, node restart required: "
+                         "unknown exception.";
+            fail = true;
+        }
+
+        if (fail)
+        {
             if (trx)
             {
                 log_fatal << "failed trx: " << *trx;
             }
-            st_.mark_corrupt();
             abort();
         }
     }

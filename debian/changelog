@@ -1,3 +1,17 @@
+galera-3 (25.3.34-0+deb11u1) bullseye; urgency=medium
+
+  * New upstream version 25.3.34. Includes multiple bug fixes, see
+    https://github.com/codership/documentation/blob/master/release-notes/release-notes-galera-25.3.34.txt
+  * Restore CK_TIMEOUT_MULTIPLIER in debian/rules to avoid having
+    various slow builds and CI runs fail in vain
+  * Includes new upstream version 25.3.33 which necessitates to
+    follow upstream change and switch from SCons to CMake, otherwise
+    building from sources would fail
+  * Remove patches applied upstream or obsoleted by SCons->CMake change
+  * Add Lintian overrides for libgalera_smm.so that are intentional
+
+ -- Otto Kekäläinen <otto@debian.org>  Sun, 29 Aug 2021 19:44:53 -0700
+
 galera-3 (25.3.31-2) unstable; urgency=medium
 
   * Fix i386 builds by forcing Scons to use DEB_HOST_ARCH if available
