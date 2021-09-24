@@ -5,10 +5,10 @@ Section: database
 Priority: optional
 Standards-Version: 4.4.1
 Build-Depends: check,
-               cmake (>= 2.8),
+               cmake,
                debhelper-compat (= 12),
-               libboost-dev (>= 1.41),
-               libboost-program-options-dev (>= 1.41),
+               libboost-dev,
+               libboost-program-options-dev,
                libssl-dev
 Homepage: http://www.galeracluster.com/
 Vcs-Browser: https://salsa.debian.org/mariadb-team/galera-3
@@ -48,7 +48,7 @@ Conflicts: garbd-2,
            percona-xtradb-cluster-garbd-2.x
 Breaks: percona-xtradb-cluster-galera-2.x
 Replaces: percona-xtradb-cluster-galera-2.x
-Depends: lsb-base (>= 3.0-6),
+Depends: lsb-base,
          ${misc:Depends},
          ${shlibs:Depends}
 Description: Galera arbitrator daemon
