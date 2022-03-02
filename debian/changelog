@@ -1,4 +1,4 @@
-galera-3 (25.3.35-1) UNRELEASED; urgency=medium
+galera-3 (25.3.35-1) unstable; urgency=medium
 
   [ Otto Kekäläinen ]
   * New upstream version 25.3.35. Includes multiple bug fixes, see
@@ -10,7 +10,7 @@ galera-3 (25.3.35-1) UNRELEASED; urgency=medium
       libboost-program-options-dev.
     + galera-arbitrator-3: Drop versioned constraint on lsb-base in Depends.
 
- -- Otto Kekäläinen <otto@debian.org>  Sun, 20 Feb 2022 00:30:04 -0800
+ -- Otto Kekäläinen <otto@debian.org>  Tue, 01 Mar 2022 20:43:22 -0800
 
 galera-3 (25.3.34-1) unstable; urgency=medium
 
