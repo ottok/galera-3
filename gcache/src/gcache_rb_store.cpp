@@ -14,6 +14,7 @@
 #include <gu_hash.h>
 
 #include <cassert>
+#include <iostream> // std::cerr
 
 namespace gcache
 {
@@ -26,6 +27,13 @@ namespace gcache
     RingBuffer::reset()
     {
         write_preamble(false);
+
+        for (seqno2ptr_iter_t i = seqno2ptr_.begin(); i != seqno2ptr_.end(); ++i)
+        {
+            if (ptr2BH(*i)->ctx == this) {
+                seqno2ptr_.erase(i);
+            }
+        }
 
         first_ = start_;
         next_  = start_;
@@ -524,10 +532,10 @@ namespace gcache
     void
     RingBuffer::print (std::ostream& os) const
     {
-        os  << "\nstart_ : " << reinterpret_cast<void*>(start_)
-            << "\nend_   : " << reinterpret_cast<void*>(end_)
-            << "\nfirst  : " << first_ - start_
-            << "\nnext   : " << next_  - start_
+        os  << "this: " << static_cast<const void*>(this)
+            << "\nstart_ : " << BH_cast(start_)
+            << "\nfirst_ : " << BH_cast(first_) << ", off: " << first_ - start_
+            << "\nnext_  : " << BH_cast(next_) << ", off: " << next_  - start_
             << "\nsize   : " << size_cache_
             << "\nfree   : " << size_free_
             << "\nused   : " << size_used_;
@@ -706,6 +714,12 @@ namespace gcache
              ptr + bh->size <= segment_end &&                   \
              BH_test(BH_cast(ptr + bh->size)))
 
+#define GCACHE_SCAN_ADVANCE(amount)             \
+            ptr += amount;                      \
+            progress.update(amount);            \
+            bh = BH_cast(ptr);
+
+
             while (GCACHE_SCAN_BUFFER_TEST)
             {
                 assert((uintptr_t(bh) % scan_step) == 0);
@@ -774,7 +788,7 @@ namespace gcache
                                 empty_buffer(old_bh);
                                 assert(BH_is_released(old_bh));
 
-                                if (erase_up_to < seqno_g) erase_up_to = seqno_g;
+                                if (erase_up_to < seqno_g) erase_up_to =seqno_g;
                             }
                         }
 
@@ -800,31 +814,42 @@ namespace gcache
                             seqno_t const se(seqno2ptr_.empty() ? SEQNO_ILL :
                                              seqno2ptr_.index_end());
                             log_warn << "Exception while mapping writeset "
-                                     << seqno_g << " into [" << sb << ", " << se
+                                     << bh << " into [" << sb << ", " << se
                                      << "): '" << e.what()
                                      << "'. Aborting GCache recovery.";
+                            /* Buffer scanning was interrupted ungracefully -
+                             * this means that we failed to recover the most
+                             * recent writesets. As such anything that was
+                             * potentially recovered before is useless.
+                             * This will cause full cache reset in recover() */
+                            seqno2ptr_.clear(SEQNO_ILL);
+
+                            BH_clear(bh); // to pacify assert() below
+                            next_ = ptr;
                             goto out;
                         }
                         seqno_max = std::max(seqno_g, seqno_max);
                     }
                 }
 
-                progress.update(bh->size);
-                ptr += bh->size;
-                bh = BH_cast(ptr);
+                GCACHE_SCAN_ADVANCE(bh->size);
             }
 
             if (!BH_is_clear(bh))
             {
-                if (start_ == segment_start && ptr != first_)
+                if (start_ == segment_start && ptr != first_ &&
+                    ptr + bh->size != first_)
+                    /* ptr + bh->size == first_ means that there is only one
+                     * segment starting at first_ and the space between start_
+                     * and first_ occupied by discarded buffers. */
                 {
                     log_warn << "Failed to scan the last segment to the end. "
                             "Last events may be missing. Last recovered event: "
                              << gid_ << ':' << seqno_max;
                 }
 
-                /* end of file, do best effort */
-                if (end_ - sizeof(BufferHeader) == segment_end) BH_clear(bh);
+                /* end of segment, close it */
+                BH_clear(bh);
             }
 
             if (offset > 0 && segment_start == start_ + offset)
@@ -833,7 +858,8 @@ namespace gcache
                 assert(1 == segment_scans);
                 first_ = segment_start;
                 size_trail_ = end_ - ptr;
-                segment_end = segment_start;
+                // there must be at least one buffer header between the segments
+                segment_end = segment_start - sizeof(BufferHeader);
                 segment_start = start_;
             }
             else if (offset < 0 && segment_start == start_)
@@ -841,17 +867,17 @@ namespace gcache
                 /* started with the second segment, try to find the first one */
                 assert(1 == segment_scans);
                 next_ = ptr;
+                GCACHE_SCAN_ADVANCE(sizeof(BufferHeader));
 
-                while (!GCACHE_SCAN_BUFFER_TEST &&
-                       ptr + sizeof(BufferHeader) < end_)
+                while (ptr + sizeof(BufferHeader) < end_ &&
+                       !GCACHE_SCAN_BUFFER_TEST)
                 {
-                    progress.update(scan_step);
-                    ptr += scan_step;
-                    bh = BH_cast(ptr);
+                    GCACHE_SCAN_ADVANCE(scan_step);
                 }
 
                 if (GCACHE_SCAN_BUFFER_TEST)
                 {
+                    /* looks like a valid buffer, a beginning of a segment */
                     segment_start = ptr;
                     first_ = segment_start;
                 }
@@ -895,9 +921,21 @@ namespace gcache
                 }
             }
 #undef GCACHE_SCAN_BUFFER_TEST
+#undef GCACHE_SCAN_ADVANCE
         } // while (segment_scans < 2)
     out:
+        assert(BH_is_clear(BH_cast(next_)));
         progress.finish();
+
+        if (debug_)
+        {
+            log_info
+                << "RB: end of scan(): seqno2ptr: "
+                << seqno2ptr_.index_begin() << " - " << seqno2ptr_.index_end()
+                << ", seqno_max: " << seqno_max;
+            log_info << "RB: " << *this;
+            dump_map();
+        }
 
         return erase_up_to;
     }
@@ -919,7 +957,7 @@ namespace gcache
     void
     RingBuffer::recover(off_t const offset, int version)
     {
-        static const char* const diag_prefix = "Recovering GCache ring buffer: ";
+        static const char* const diag_prefix ="Recovering GCache ring buffer: ";
 
         /* scan the buffer and populate seqno2ptr map */
         seqno_t const lowest(scan(offset, version > 0 ? MemOps::ALIGNMENT : 1)
@@ -954,7 +992,7 @@ namespace gcache
             for (; r != seqno2ptr_.rend() && *r && seqno_min > lowest; ++r)
             {
                 --seqno_min;
-                if (assert_ptr_seqno(seqno2ptr_, *r, seqno_min)) goto full_reset;
+                if (assert_ptr_seqno(seqno2ptr_, *r,seqno_min)) goto full_reset;
             }
             /* At this point r points to one below seqno_min */
 
@@ -972,7 +1010,7 @@ namespace gcache
                 {
                     if (*r) empty_buffer(ptr2BH(*r));
                 }
-                seqno2ptr_.erase(seqno2ptr_.begin(), seqno2ptr_.find(seqno_min));
+                seqno2ptr_.erase(seqno2ptr_.begin(),seqno2ptr_.find(seqno_min));
             }
             assert(seqno2ptr_.size() > 0);
 
@@ -986,7 +1024,7 @@ namespace gcache
 
                 bh = BH_next(bh);
 
-                if (gu_unlikely(0 == bh->size)) bh = BH_cast(start_); // rollover
+                if (gu_unlikely(0 == bh->size)) bh = BH_cast(start_);// rollover
             }
             first_ = reinterpret_cast<uint8_t*>(bh);
 
@@ -998,6 +1036,18 @@ namespace gcache
             {
                 if (gu_likely(bh->size) > 0)
                 {
+                    bool const inconsistency(
+                        BH_next(bh) > BH_cast(end_ - sizeof(BufferHeader)) ||
+                        bh->ctx != this
+                        );
+
+                    if (gu_unlikely(inconsistency))
+                    {
+                        assert(0);
+                        log_warn << diag_prefix << "Corrupt buffer leak1: "<<bh;
+                        goto full_reset;
+                    }
+
                     assert(bh->seqno_d >= SEQNO_ILL);
                     assert(bh->size > sizeof(BufferHeader));
 
@@ -1049,6 +1099,18 @@ namespace gcache
             {
                 if (gu_likely(bh->size > 0))
                 {
+                    bool const inconsistency(
+                        BH_next(bh) > BH_cast(end_ - sizeof(BufferHeader)) ||
+                        bh->ctx != this
+                        );
+
+                    if (gu_unlikely(inconsistency))
+                    {
+                        assert(0);
+                        log_warn << diag_prefix << "Corrupt buffer leak2: " <<bh;
+                        goto full_reset;
+                    }
+
                     total++;
 
                     if (gu_likely(bh->seqno_g > 0))
@@ -1082,19 +1144,138 @@ namespace gcache
             /* No buffers on recovery should be in used state */
             assert(0 == size_used_);
 
-            log_info << "GCache DEBUG: RingBuffer::recover(): found "
+            log_info << diag_prefix << "found "
                      << locked << '/' << total << " locked buffers";
-            log_info << "GCache DEBUG: RingBuffer::recover(): free space: "
+            log_info << diag_prefix << "free space: "
                      << size_free_ << '/' << size_cache_;
 
             assert_sizes();
+
+            if (debug_)
+            {
+                log_info << *this;
+                dump_map();
+            }
         }
         else
         {
         full_reset:
-            log_info << diag_prefix << "didn't recover any events.";
+            log_info << diag_prefix <<"Recovery failed, need to do full reset.";
             reset();
         }
     }
 
+    static void
+    print_chain(const uint8_t* const rb_start, const uint8_t* const chain_start,
+                const uint8_t* const chain_end, size_t const count,
+                const char* const type_str)
+    {
+        ptrdiff_t const start_off(chain_start - rb_start);
+        ptrdiff_t const end_off(chain_end - rb_start);
+        std::cerr <<  start_off << "\t" << end_off << "\t"
+                  << end_off - start_off << "\t" << count << "\t"
+                  << type_str << std::endl;
+    }
+
+    void
+    RingBuffer::dump_map() const
+    {
+        enum chain_t
+        {
+            ORDERED,
+            UNORDERED,
+            RELEASED,
+            NONE
+        };
+
+        static const char* chain_str[] =
+            { "ORDERED", "UNORDERED", "RELEASED", "NONE" };
+
+        size_t chain_size[] = { 0, 0, 0, 0 };
+        size_t chain_count[] = { 0, 0, 0, 0 };
+
+        chain_t chain(NONE);
+        const uint8_t* chain_start;
+        size_t count;
+
+        bool next(false);
+        const uint8_t* ptr(start_);
+        const BufferHeader* bh(BH_const_cast(ptr));
+
+        log_info << "RB start_";
+        log_info << bh;
+        for (int i(0); i < 2; i++)
+        {
+            while (!BH_is_clear(bh))
+            {
+                if (first_ == ptr && i == 0)
+                {
+                    goto first; // rare situation when there is only
+                    // one segment in the start/middle
+                }
+
+                size_t const offset(bh->size);
+                chain_t const typ(bh->seqno_g >= 0 ? ORDERED : UNORDERED);
+                if (chain != typ)
+                { // new chain starts
+                    if (chain != NONE)
+                    { // old chain ends
+                        print_chain(start_, chain_start, ptr, count,
+                                    chain_str[chain]);
+                        chain_count[chain] += count;
+                    }
+                    chain = typ;
+                    chain_start = ptr;
+                    count = 0;
+                }
+                count++;
+                chain_size[typ] += offset;
+                chain_size[RELEASED] += offset * BH_is_released(bh);
+                chain_count[RELEASED] += BH_is_released(bh);
+
+                ptr += offset;
+                bh = BH_const_cast(ptr);
+            }
+            // old chain ends
+            print_chain(start_, chain_start, ptr, count, chain_str[chain]);
+            chain_count[chain] += count;
+            if (1 == i) break; // final segment read
+
+            log_info << "RB next_";
+            log_info << bh << ", off: " << ptr - start_;
+            next = true;
+
+            log_info << "RB middle gap: " << first_ - ptr;
+
+            ptr = first_;
+            bh = BH_const_cast(ptr);
+        first:
+            chain = NONE;
+            count = 0;
+            log_info << "RB first_";
+            log_info << bh << ", off: " << ptr - start_;
+        }
+
+        if (!next)
+        {
+            log_info << "RB next_";
+        }
+        else
+        {
+            log_info << "RB rollover";
+        }
+        log_info << bh << ", off: " << ptr - start_;
+        log_info << "RB trailing space: " << end_ - ptr;
+
+        log_info << "RB space usage:"
+                 << "\nORDERED  : " << chain_size[ORDERED]
+                 << "\nUNORDERED: " << chain_size[UNORDERED]
+                 << "\nRELEASED : " << chain_size[RELEASED]
+                 << "\nNONE     : " << chain_size[NONE];
+        log_info << "RB buf counts:"
+                 << "\nORDERED  : " << chain_count[ORDERED]
+                 << "\nUNORDERED: " << chain_count[UNORDERED]
+                 << "\nRELEASED : " << chain_count[RELEASED]
+                 << "\nNONE     : " << chain_count[NONE];
+    }
 } /* namespace gcache */
