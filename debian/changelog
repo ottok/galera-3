@@ -1,3 +1,12 @@
+galera-3 (25.3.36-0+deb11u1) bullseye; urgency=medium
+
+  * New upstream version 25.3.36. Includes multiple bug fixes, see
+    https://github.com/codership/documentation/blob/master/release-notes/release-notes-galera-25.3.36.txt
+    and for previous release 25.3.35 see
+    https://github.com/codership/documentation/blob/master/release-notes/release-notes-galera-25.3.35.txt
+
+ -- Otto Kekäläinen <otto@debian.org>  Wed, 02 Mar 2022 21:39:54 -0800
+
 galera-3 (25.3.34-0+deb11u1) bullseye; urgency=medium
 
   * New upstream version 25.3.34. Includes multiple bug fixes, see
