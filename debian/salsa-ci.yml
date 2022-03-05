@@ -4,8 +4,3 @@ include:
 
 variables:
   RELEASE: 'bullseye'
-
-# Reprotests started failing in after Galera 25.3.33 import
-# Forwarded: https://github.com/codership/galera/issues/593
-reprotest:
-  allow_failure: true
