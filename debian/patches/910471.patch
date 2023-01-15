@@ -17,7 +17,7 @@ Date:   Mon Oct 15 11:33:07 2018 +0300
  # Source function library.
  if [ -f /etc/redhat-release ]; then
  	. /etc/init.d/functions
-@@ -178,4 +174,3 @@ case "$1" in
+@@ -179,4 +175,3 @@ case "$1" in
  	echo $"Usage: $0 {start|stop|status|restart|reload}"
  	exit 2
  esac
