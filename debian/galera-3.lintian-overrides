@@ -15,4 +15,4 @@
 galera-3: sharedobject-in-library-directory-missing-soname [usr/lib/libgalera_smm.so]
 
 # File used to reside in /usr/lib/galera/, so keep link for backwards compat
-galera-3: breakout-link usr/lib/galera/libgalera_smm.so -> usr/lib/libgalera_smm.so
+galera-3: ldconfig-escape usr/lib/galera/libgalera_smm.so -> usr/lib/libgalera_smm.so
