@@ -1,4 +1,4 @@
-galera-3 (25.3.37-1) UNRELEASED; urgency=medium
+galera-3 (25.3.37-1) unstable; urgency=low
 
   * New upstream version 25.3.37. Includes multiple bug fixes, see
     https://github.com/codership/documentation/blob/master/release-notes/release-notes-galera-25.3.37.txt
@@ -6,8 +6,10 @@ galera-3 (25.3.37-1) UNRELEASED; urgency=medium
       WORK_DIR in garb.conf which can be used to set the working
       directory for garbd process, which helps to fix long standing
       issue from 2015 (https://github.com/codership/galera/issues/313).
+  * Drop obsolete dependency on package lsb-release
+  * Fix minor Lintian nags
 
- -- Otto Kekäläinen <otto@debian.org>  Sun, 15 Jan 2023 13:32:28 -0800
+ -- Otto Kekäläinen <otto@debian.org>  Sun, 29 Jan 2023 11:16:34 -0800
 
 galera-3 (25.3.36-1) unstable; urgency=medium
 
