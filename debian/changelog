@@ -1,3 +1,14 @@
+galera-3 (25.3.37-0+deb11u1) bullseye; urgency=medium
+
+  * New upstream version 25.3.37. Includes multiple bug fixes, see
+    https://github.com/codership/documentation/blob/master/release-notes/release-notes-galera-25.3.37.txt
+    - Arbitrator daemon garbd now has parameters -w, --workdir and
+      WORK_DIR in garb.conf which can be used to set the working
+      directory for garbd process, which helps to fix long standing
+      issue from 2015 (https://github.com/codership/galera/issues/313).
+
+ -- Otto Kekäläinen <otto@debian.org>  Sat, 15 Apr 2023 12:14:05 -0700
+
 galera-3 (25.3.36-0+deb11u1) bullseye; urgency=medium
 
   * New upstream version 25.3.36. Includes multiple bug fixes, see
