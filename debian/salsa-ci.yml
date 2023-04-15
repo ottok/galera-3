@@ -4,3 +4,8 @@ include:
 
 variables:
   RELEASE: 'bullseye'
+  # Make Lintian image use Bullseye as it does not use ${RELEASE} since
+  # https://salsa.debian.org/salsa-ci-team/pipeline/-/merge_requests/347 and
+  # Lintian v2.115+ has syntax changes about brackets '[]' usage that are too
+  # invasive to fix/use in older distro releases
+  SALSA_CI_IMAGES_LINTIAN: ${SALSA_CI_IMAGES}/lintian:bullseye
